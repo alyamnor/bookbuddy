@@ -243,6 +243,7 @@ class BookDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+            backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(bookData['title'] ?? "Book Detail"),
         backgroundColor: const Color(0xFFE5D3B3),
