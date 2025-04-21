@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'fetch_data_fromfirebase.dart';
 
 Future<void> main() async {
   //Initialize Firebase
@@ -18,22 +19,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: const FetchDataFromFirebase(),
-    );
-  }
-}
-
-class FetchDataFromFirebase extends StatelessWidget {
-  const FetchDataFromFirebase({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Fetch Data from Firebase'),
-      ),
-      body: const Center(
-        child: Text('Fetching data...'),
-      ),
     );
   }
 }
