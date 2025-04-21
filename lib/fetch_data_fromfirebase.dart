@@ -2,13 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class BookGridByCategory extends StatelessWidget {
+class BookGridByCategory extends StatefulWidget {
   const BookGridByCategory({super.key});
+
+  @override
+  State<BookGridByCategory> createState() => _BookGridByCategoryState();
+}
+
+class _BookGridByCategoryState extends State<BookGridByCategory> {
+  String searchQuery = '';
+  String selectedGenre = 'All';
+
+  final genres = ['All', 'Romance', 'Horror', 'Self Help', 'Slice of Life'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: const Color(0xFFE5D3B3),
         foregroundColor: Colors.white,
@@ -25,75 +36,247 @@ class BookGridByCategory extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('Book Database').snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-
-          // Group books by category
-          Map<String, List<DocumentSnapshot>> categoryMap = {};
-          for (var doc in snapshot.data!.docs) {
-            final data = doc.data() as Map<String, dynamic>;
-            final category = data['category'] ?? 'Others';
-            categoryMap.putIfAbsent(category, () => []).add(doc);
-          }
-
-          return ListView(
-            children: categoryMap.entries.map((entry) {
-              final category = entry.key;
-              final books = entry.value;
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-                    child: Text(
-                      category.toUpperCase(),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search by title, author, genre',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
                   ),
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: books.length,
-                      itemBuilder: (context, index) {
-                        final book = books[index].data() as Map<String, dynamic>;
-                        return Container(
-                          width: 120,
-                          margin: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Column(
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value.toLowerCase();
+                  });
+                },
+              ),
+            ),
+
+            // Genre Chips
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Row(
+                children:
+                    genres.map((genre) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ChoiceChip(
+                          label: Text(genre),
+                          selected: selectedGenre == genre,
+                          onSelected: (isSelected) {
+                            setState(() {
+                              selectedGenre = genre;
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Book List
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream:
+                    FirebaseFirestore.instance
+                        .collection('book-database')
+                        .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  Map<String, List<DocumentSnapshot>> categoryMap = {};
+                  for (var doc in snapshot.data!.docs) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    final category = data['category'] ?? 'Others';
+
+                    final title = data['title']?.toString().toLowerCase() ?? '';
+                    final author =
+                        data['author']?.toString().toLowerCase() ?? '';
+                    final genre = data['genre']?.toString().toLowerCase() ?? '';
+
+                    bool matchesSearch =
+                        title.contains(searchQuery) ||
+                        author.contains(searchQuery) ||
+                        genre.contains(searchQuery);
+
+                    bool matchesGenre =
+                        selectedGenre == 'All' ||
+                        genre == selectedGenre.toLowerCase();
+
+                    if (matchesSearch && matchesGenre) {
+                      categoryMap.putIfAbsent(category, () => []).add(doc);
+                    }
+                  }
+
+                  if (categoryMap.isEmpty) {
+                    return const Center(child: Text("No books found."));
+                  }
+
+                  return ListView(
+                    children:
+                        categoryMap.entries.map((entry) {
+                          final category = entry.key;
+                          final books = entry.value;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  book['cover-image-url'] ?? '',
-                                  height: 150,
-                                  width: 100,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                  vertical: 10,
+                                ),
+                                child: Text(
+                                  category.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
-                              const SizedBox(height: 5),
-                              Text(
-                                book['title'] ?? '',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(fontSize: 12),
+                              SizedBox(
+                                height: 200,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: books.length,
+                                  itemBuilder: (context, index) {
+                                    final book =
+                                        books[index].data()
+                                            as Map<String, dynamic>;
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => BookDetailPage(
+                                                  bookData: book,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        width: 120,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: Image.network(
+                                                book['cover-image-url'] ?? '',
+                                                height: 150,
+                                                width: 100,
+                                                fit: BoxFit.cover,
+                                                errorBuilder:
+                                                    (_, __, ___) => const Icon(
+                                                      Icons.broken_image,
+                                                    ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 5),
+                                            Text(
+                                              book['title'] ?? '',
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
-                          ),
-                        );
-                      },
+                          );
+                        }).toList(),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BookDetailPage extends StatelessWidget {
+  final Map<String, dynamic> bookData;
+
+  const BookDetailPage({super.key, required this.bookData});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(bookData['title'] ?? "Book Detail"),
+        backgroundColor: const Color(0xFFE5D3B3),
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (bookData['cover-image-url'] != null)
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      bookData['cover-image-url'],
+                      height: 200,
                     ),
-                  )
-                ],
-              );
-            }).toList(),
-          );
-        },
+                  ),
+                ),
+              const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  bookData['title'] ?? '',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: Text(
+                  'by ${bookData['author'] ?? 'Unknown'}',
+                  style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Genre: ${bookData['genre'] ?? 'N/A'}',
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                bookData['description'] ?? 'N/A',
+                style: const TextStyle(fontSize: 14),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
