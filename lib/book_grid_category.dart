@@ -2,8 +2,6 @@ import 'package:bookbuddy/book_detail.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-
 
 class BookGridByCategory extends StatefulWidget {
   const BookGridByCategory({super.key});
@@ -39,18 +37,6 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
         ),
         centerTitle: true,
       ),
-        bottomNavigationBar: CurvedNavigationBar(
-    backgroundColor: Colors.transparent,
-    color: const Color(0xFFE5D3B3),
-    items: <Widget>[
-      Icon(Icons.home_filled, size: 30, color: Color(0xFF987554),),
-      Icon(Icons.add_a_photo_sharp, size: 30, color: Color(0xFF987554)),
-      Icon(Icons.person_2, size: 30, color: Color(0xFF987554)),
-    ],
-    onTap: (index) {
-      //Handle button tap
-    },
-  ),
   body: SafeArea(
         child: Column(
           children: [
