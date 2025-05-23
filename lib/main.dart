@@ -4,6 +4,8 @@ import 'book_grid_category.dart';
 import 'image_picker.dart'; // Import your image picker
 import 'profile_screen.dart'; // Import your profile screen
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'book_recognition.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

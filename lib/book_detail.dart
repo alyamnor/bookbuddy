@@ -8,9 +8,9 @@ class BookDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-            backgroundColor: Colors.white,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(bookData[''] ?? "Book Detail"),
+        title: Text(bookData['title'] ?? "Book Detail"),
         backgroundColor: const Color(0xFFE5D3B3),
       ),
       body: SafeArea(
@@ -26,6 +26,8 @@ class BookDetailPage extends StatelessWidget {
                     child: Image.network(
                       bookData['cover-image-url'],
                       height: 200,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.broken_image, size: 100),
                     ),
                   ),
                 ),
@@ -50,9 +52,12 @@ class BookDetailPage extends StatelessWidget {
                 style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 10),
-              Text(
-                bookData['description'] ?? 'N/A',
-                style: const TextStyle(fontSize: 14),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  bookData['description'] ?? 'N/A',
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
             ],
           ),
