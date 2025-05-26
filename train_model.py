@@ -1,67 +1,73 @@
 import os
+import pandas as pd
 import pytesseract
 from PIL import Image
-import pandas as pd
 
-# 🔧 CONFIG
-IMAGE_DIR = r"C:\Users\ASUS\book-covers-dataset"
-CSV_PATH = r"C:\Users\ASUS\Documents\GitHub\FYP2025\bookbuddy\data\main_dataset.csv"
+# Optional: set tesseract path if not auto-detected
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# 📖 Load book metadata from CSV
-def load_books_from_csv(csv_path):
-    df = pd.read_csv(csv_path)
-    return df[['name', 'author', 'img_paths']].dropna()
+# Load dataset
+csv_path = r"C:\Users\ASUS\Documents\GitHub\FYP2025\bookbuddy\data\main_dataset.csv"
+images_folder = r"C:\Users\ASUS\Documents\GitHub\FYP2025\bookbuddy\data\book-covers"
 
-# 🔍 Match extracted text with book entries
-def match_with_dataset(extracted_text, book_df):
-    extracted_text = extracted_text.lower()
-    matches = []
-    for _, row in book_df.iterrows():
-        title = str(row['name']).lower()
-        author = str(row['author']).lower()
-        if title in extracted_text or author in extracted_text:
-            matches.append(row.to_dict())
-    return matches
+df = pd.read_csv(csv_path)
 
-# 🔠 Perform OCR on a single image
-def extract_text_from_image(image_path):
-    try:
-        image = Image.open(image_path)
-        text = pytesseract.image_to_string(image)
-        return text.lower()
-    except Exception as e:
-        print(f"Error reading {image_path}: {e}")
-        return ""
+print(f"Loaded {len(df)} records from dataset.")
 
-# 🚀 Main logic
-def main():
-    book_df = load_books_from_csv(CSV_PATH)
-    results = []
+# Columns expected: 'filename', 'title', 'author'
+for idx, row in df.iterrows():
+    image_file = os.path.join(images_folder, row['filename'])
 
-    print(f"📂 Scanning folder: {IMAGE_DIR}")
-    for filename in os.listdir(IMAGE_DIR):
-        if filename.lower().endswith((".jpg", ".jpeg", ".png")):
-            image_path = os.path.join(IMAGE_DIR, filename)
-            print(f"\n📷 Processing: {filename}")
-            extracted_text = extract_text_from_image(image_path)
-            print(f"📝 Extracted Text: {extracted_text.strip()}")
+    if not os.path.exists(image_file):
+        print(f"Image not found: {image_file}")
+        continue
 
-            matches = match_with_dataset(extracted_text, book_df)
-            if matches:
-                print(f"✅ Matches Found:")
-                for match in matches:
-                    print(f"  → {match['name']} by {match['author']}")
-                results.append({"image": filename, "matches": matches})
-            else:
-                print("❌ No match found.")
+    # Load image
+    image = Image.open(image_file)
 
-    # Save results to file
-    output_path = "ocr_results_from_csv.json"
-    import json
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(results, f, indent=2, ensure_ascii=False)
+    # OCR
+    ocr_text = pytesseract.image_to_string(image)
+    ocr_text = ocr_text.lower()
 
-    print(f"\n✅ Done. Results saved to {output_path}")
+    title = str(row.get('title', '')).lower()
+    author = str(row.get('author', '')).lower()
 
-if __name__ == "__main__":
-    main()
+    ocr_text_clean = ocr_text.replace('\n', ' ').replace('\r', '').strip().lower()
+    title_found = title in ocr_text_clean
+    author_found = author in ocr_text_clean
+
+    print(f"📘 {row['filename']}")
+    print(f"→ Ground Truth: {row['title']} by {row['author']}")
+    print(f"→ OCR Extracted: {ocr_text.strip()}")
+    print(f"→ Match: Title={'✅' if title_found else '❌'}, Author={'✅' if author_found else '❌'}\n")
+
+# Create a new list of results
+ocr_results = []
+
+# Reset loop
+for idx, row in df.iterrows():
+    image_file = os.path.join(images_folder, row['filename'])
+
+    if not os.path.exists(image_file):
+        continue
+
+    image = Image.open(image_file)
+    ocr_text = pytesseract.image_to_string(image).strip()
+
+    result = {
+        "filename": row['filename'],
+        "ground_truth_title": row['title'],
+        "ground_truth_author": row['author'],
+        "ocr_text": ocr_text
+    }
+
+    ocr_results.append(result)
+
+# Export to JSON
+import json
+
+output_path = os.path.join(os.path.dirname(csv_path), "ocr_results.json")
+with open(output_path, 'w', encoding='utf-8') as f:
+    json.dump(ocr_results, f, indent=2, ensure_ascii=False)
+
+print(f"✅ OCR results exported to: {output_path}")

@@ -7,10 +7,18 @@ class BookDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // OCR extracted values
+    final String ocrText = (bookData['ocr_text'] ?? '').toLowerCase();
+    final String title = (bookData['ground_truth_title'] ?? '').toLowerCase();
+    final String author = (bookData['ground_truth_author'] ?? '').toLowerCase();
+
+    final bool titleMatch = ocrText.contains(title);
+    final bool authorMatch = ocrText.contains(author);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(bookData['title'] ?? "Book Detail"),
+        title: Text(bookData['ground_truth_title'] ?? "Book Detail"),
         backgroundColor: const Color(0xFFE5D3B3),
       ),
       body: SafeArea(
@@ -34,7 +42,7 @@ class BookDetailPage extends StatelessWidget {
               const SizedBox(height: 20),
               Center(
                 child: Text(
-                  bookData['title'] ?? '',
+                  bookData['ground_truth_title'] ?? '',
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
@@ -42,23 +50,59 @@ class BookDetailPage extends StatelessWidget {
               const SizedBox(height: 10),
               Center(
                 child: Text(
-                  'by ${bookData['author'] ?? 'Unknown'}',
+                  'by ${bookData['ground_truth_author'] ?? 'Unknown'}',
                   style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                'Genre: ${bookData['genre'] ?? 'N/A'}',
-                style: const TextStyle(fontSize: 14),
+                'OCR Extracted:',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+              Container(
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.only(top: 4, bottom: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9F9F9),
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Text(
-                  bookData['description'] ?? 'N/A',
-                  style: const TextStyle(fontSize: 14),
+                  ocrText.trim().isEmpty ? 'No OCR data found.' : ocrText,
+                  style: const TextStyle(fontSize: 14, fontFamily: 'monospace'),
                 ),
               ),
+              Text.rich(
+                TextSpan(
+                  text: 'Match Results:\n',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  children: [
+                    TextSpan(
+                      text: '• Title match: ',
+                      style: const TextStyle(fontWeight: FontWeight.normal),
+                    ),
+                    TextSpan(
+                      text: titleMatch ? '✅' : '❌',
+                      style: TextStyle(color: titleMatch ? Colors.green : Colors.red),
+                    ),
+                    const TextSpan(text: '\n• Author match: '),
+                    TextSpan(
+                      text: authorMatch ? '✅' : '❌',
+                      style: TextStyle(color: authorMatch ? Colors.green : Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (bookData['genre'] != null)
+                Text('Genre: ${bookData['genre']}', style: const TextStyle(fontSize: 14)),
+              if (bookData['description'] != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  bookData['description'],
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ]
             ],
           ),
         ),
