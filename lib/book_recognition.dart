@@ -19,7 +19,6 @@ class _MyImagePickerState extends State<MyImagePicker> {
   @override
   void initState() {
     super.initState();
-    // Automatically trigger camera when screen opens
     Future.delayed(Duration.zero, () => pickImage(ImageSource.camera));
   }
 
@@ -33,33 +32,26 @@ class _MyImagePickerState extends State<MyImagePicker> {
     });
 
     final inputImage = InputImage.fromFile(_image!);
-    final textRecognizer = GoogleMlKit.vision.textRecognizer();
-    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
-    final String extractedText = recognizedText.text.toLowerCase();
+    final recognizer = GoogleMlKit.vision.textRecognizer();
+    final text = await recognizer.processImage(inputImage);
+    await recognizer.close();
 
-    await searchBookInFirestore(extractedText);
+    await _searchBook(text.text.toLowerCase());
   }
 
-  Future<void> searchBookInFirestore(String extractedText) async {
+  Future<void> _searchBook(String text) async {
     final snapshot = await FirebaseFirestore.instance.collection('book-database').get();
-
     for (var doc in snapshot.docs) {
       final data = doc.data();
-      final title = data['title']?.toString().toLowerCase() ?? '';
-      final author = data['author']?.toString().toLowerCase() ?? '';
+      final title = data['title']?.toLowerCase() ?? '';
+      final author = data['author']?.toLowerCase() ?? '';
 
-      if (extractedText.contains(title) || extractedText.contains(author)) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => BookDetailPage(bookData: data)),
-        );
+      if (text.contains(title) || text.contains(author)) {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => BookDetailPage(bookData: data)));
         return;
       }
     }
-
-    setState(() {
-      result = "❌ No matching book found.";
-    });
+    setState(() => result = "❌ No matching book found.");
   }
 
   @override
