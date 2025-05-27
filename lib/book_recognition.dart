@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:logger/logger.dart';
+import 'package:string_similarity/string_similarity.dart';
+
 import 'book_detail.dart';
 
 class MyImagePicker extends StatefulWidget {
@@ -15,6 +18,7 @@ class MyImagePicker extends StatefulWidget {
 class _MyImagePickerState extends State<MyImagePicker> {
   File? _image;
   String result = '';
+  final logger = Logger();
 
   @override
   void initState() {
@@ -31,26 +35,50 @@ class _MyImagePickerState extends State<MyImagePicker> {
       result = '';
     });
 
-    final inputImage = InputImage.fromFile(_image!);
-    final recognizer = GoogleMlKit.vision.textRecognizer();
-    final text = await recognizer.processImage(inputImage);
-    await recognizer.close();
+    final inputImage = InputImage.fromFilePath(_image!.path);
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
-    await _searchBook(text.text.toLowerCase());
+    final RecognizedText recognizedText = await textRecognizer.processImage(
+      inputImage,
+    );
+    await textRecognizer.close();
+
+    final scannedText = recognizedText.text.toLowerCase();
+    logger.i("OCR Result: $scannedText");
+
+    await _searchBook(scannedText);
   }
 
   Future<void> _searchBook(String text) async {
-    final snapshot = await FirebaseFirestore.instance.collection('book-database').get();
+    final snapshot =
+        await FirebaseFirestore.instance.collection('book-database').get();
+
     for (var doc in snapshot.docs) {
       final data = doc.data();
       final title = data['title']?.toLowerCase() ?? '';
       final author = data['author']?.toLowerCase() ?? '';
 
-      if (text.contains(title) || text.contains(author)) {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => BookDetailPage(bookData: data)));
+      bool wordMatch = title
+          .split(' ')
+          .where((word) => word.length > 3)
+          .any((word) => text.contains(word));
+
+      double titleScore = StringSimilarity.compareTwoStrings(text, title);
+      double authorScore = StringSimilarity.compareTwoStrings(text, author);
+
+      bool authorMatch = text.contains(author) || authorScore > 0.6;
+      bool fuzzyTitleMatch = titleScore > 0.5;
+
+      if (wordMatch || authorMatch || fuzzyTitleMatch) {
+        Navigator.push(
+          // ignore: use_build_context_synchronously
+          context,
+          MaterialPageRoute(builder: (_) => BookDetailPage(bookData: data)),
+        );
         return;
       }
     }
+
     setState(() => result = "❌ No matching book found.");
   }
 
