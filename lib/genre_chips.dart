@@ -1,3 +1,4 @@
+//genre_chips.dart
 import 'package:flutter/material.dart';
 
 class GenreChipList extends StatelessWidget {

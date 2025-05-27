@@ -1,3 +1,4 @@
+//search_bar.dart
 import 'package:flutter/material.dart';
 
 class BookSearchBar extends StatelessWidget {
