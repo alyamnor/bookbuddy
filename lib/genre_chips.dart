@@ -1,16 +1,11 @@
-//genre_chips.dart
-import 'package:flutter/material.dart';
+/*import 'package:flutter/material.dart';
 
 class GenreChipList extends StatelessWidget {
   final List<String> genres;
-  final String selectedGenre;
-  final Function(String) onSelected;
 
   const GenreChipList({
     super.key,
     required this.genres,
-    required this.selectedGenre,
-    required this.onSelected,
   });
 
   @override
@@ -22,14 +17,12 @@ class GenreChipList extends StatelessWidget {
         children: genres.map((genre) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ChoiceChip(
+            child: Chip(
               label: Text(genre),
-              selected: selectedGenre == genre,
-              onSelected: (_) => onSelected(genre),
             ),
           );
         }).toList(),
       ),
     );
   }
-}
+}*/
