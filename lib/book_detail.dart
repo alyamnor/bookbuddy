@@ -67,12 +67,12 @@ class BookDetailPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 4), // Shadow below the image
-                      ),
+BoxShadow(
+  color: const Color.fromRGBO(0, 0, 0, 0.2), // Equivalent to black with 20% opacity
+  spreadRadius: 2,
+  blurRadius: 8,
+  offset: const Offset(0, 4), // Shadow below the image
+),
                     ],
                   ),
                   child: ClipRRect(
@@ -155,7 +155,7 @@ class BookDetailPage extends StatelessWidget {
                 Divider(color: Colors.grey.shade400, thickness: 1),
                 const SizedBox(height: 10),
                 Text(
-                  "You may like",
+                  "If you like this book, You may like",
                   style: GoogleFonts.concertOne(
                     textStyle: const TextStyle(
                       fontWeight: FontWeight.bold,
