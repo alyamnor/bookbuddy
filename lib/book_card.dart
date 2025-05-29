@@ -9,6 +9,10 @@ class BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = bookData['cover-image-url']?.isNotEmpty == true
+        ? bookData['cover-image-url']
+        : 'https://via.placeholder.com/150';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -19,11 +23,17 @@ class BookCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: Image.network(
-                bookData['cover-image-url'] ?? '',
+                imageUrl,
                 height: 150,
                 width: 100,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.broken_image, size: 100);
+                },
               ),
             ),
             const SizedBox(height: 5),

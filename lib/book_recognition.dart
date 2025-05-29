@@ -139,7 +139,10 @@ class _MyImagePickerState extends State<MyImagePicker> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (_) => BookDetailPage(bookData: bestMatch['data'] as Map<String, dynamic>)),
+          builder: (_) => BookDetailPage(
+                bookData: bestMatch['data'] as Map<String, dynamic>,
+                allBooks: snapshot.docs.map((doc) => doc.data()).toList(),
+              )),
     );
   } catch (e, stackTrace) {
     logger.e("Firestore Error", error: e, stackTrace: stackTrace);

@@ -1,3 +1,4 @@
+//book_grid_category.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,7 +14,6 @@ class BookGridByCategory extends StatefulWidget {
 
 class _BookGridByCategoryState extends State<BookGridByCategory> {
   String searchQuery = '';
-
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -43,40 +43,38 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
               decoration: InputDecoration(
                 hintText: 'Search by title, author, genre...',
                 prefixIcon: const Icon(Icons.search),
-                suffixIcon:
-                    searchQuery.isNotEmpty
-                        ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => searchQuery = '');
-                          },
-                        )
-                        : null,
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => searchQuery = '');
+                        },
+                      )
+                    : null,
                 border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Colors.grey),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
                 ),
               ),
             ),
           ),
           Expanded(
-            child:
-                searchQuery.isEmpty
-                    ? ListView(
-                      children: [
-                        _buildCategorySection('Romance', []),
-                        _buildCategorySection('Fantasy', []),
-                        _buildCategorySection('Self Help', []),
-                        _buildCategorySection('Slice of Life', []),
-                        _buildCategorySection('Horror', []),
-                      ],
-                    )
-                    : _buildSearchResults(searchQuery),
+            child: searchQuery.isEmpty
+                ? ListView(
+                    children: [
+                      _buildCategorySection('Romance', []),
+                      _buildCategorySection('Fantasy', []),
+                      _buildCategorySection('Self Help', []),
+                      _buildCategorySection('Slice of Life', []),
+                      _buildCategorySection('Horror', []),
+                    ],
+                  )
+                : _buildSearchResults(searchQuery),
           ),
         ],
       ),
@@ -85,84 +83,70 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
 
   Widget _buildCategorySection(String category, List<String> bookTitles) {
     return StreamBuilder<QuerySnapshot>(
-      stream:
-          FirebaseFirestore.instance.collection('book-database').snapshots(),
+      stream: FirebaseFirestore.instance.collection('book-database').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const SizedBox.shrink();
-        final books =
-            snapshot.data!.docs.where((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              final title = (data['title'] ?? '').toString().toLowerCase();
-              final genre = (data['genre'] ?? '').toString().toLowerCase();
-              final author = (data['author'] ?? '').toString().toLowerCase();
-              final query = searchQuery.toLowerCase();
+        final books = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final title = (data['title'] ?? '').toString().toLowerCase();
+          final genre = (data['genre'] ?? '').toString().toLowerCase();
+          final author = (data['author'] ?? '').toString().toLowerCase();
+          final query = searchQuery.toLowerCase();
 
-              final matchesQuery =
-                  title.contains(query) ||
-                  genre.contains(query) ||
-                  author.contains(query);
-
-              final matchesCategory =
-                  genre == category.toLowerCase() ||
-                  bookTitles.contains(data['title']);
-
-              return matchesQuery && matchesCategory;
-            }).toList();
+          final matchesQuery =
+              title.contains(query) || genre.contains(query) || author.contains(query);
+          final matchesCategory =
+              genre == category.toLowerCase() || bookTitles.contains(data['title']);
+          return matchesQuery && matchesCategory;
+        }).toList();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
               child: Text(
                 category.toUpperCase(),
                 style: GoogleFonts.concertOne(
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Color(0xFF987554), // Deep purple color
+                    color: Color(0xFF987554),
                   ),
                 ),
               ),
             ),
             SizedBox(
               height: 200,
-              child:
-                  books.isEmpty
-                      ? Center(
-                        child: Text(
-                          'No results found in $category.',
-                          style: const TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
-                          ),
+              child: books.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No results found in $category.',
+                        style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey,
                         ),
-                      )
-                      : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: books.length,
-                        itemBuilder:
-                            (context, index) => BookCard(
-                              bookData:
-                                  books[index].data() as Map<String, dynamic>,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => BookDetailPage(
-                                          bookData:
-                                              books[index].data()
-                                                  as Map<String, dynamic>,
-                                        ),
-                                  ),
-                                );
-                              },
-                            ),
                       ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: books.length,
+                      itemBuilder: (context, index) => BookCard(
+                        bookData: books[index].data() as Map<String, dynamic>,
+                        onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => BookDetailPage(
+        bookData: books[index].data() as Map<String, dynamic>,
+        allBooks: books.map((doc) => doc.data() as Map<String, dynamic>).toList(),
+      ),
+    ),
+  );
+}
+
+                      ),
+                    ),
             ),
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
@@ -176,24 +160,22 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
 
   Widget _buildSearchResults(String query) {
     return StreamBuilder<QuerySnapshot>(
-      stream:
-          FirebaseFirestore.instance.collection('book-database').snapshots(),
+      stream: FirebaseFirestore.instance.collection('book-database').snapshots(),
       builder: (context, snapshot) {
-        if (!snapshot.hasData)
+        if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
+        }
 
         final lowerQuery = query.toLowerCase();
-        final books =
-            snapshot.data!.docs.where((doc) {
-              final data = doc.data() as Map<String, dynamic>;
-              final title = (data['title'] ?? '').toString().toLowerCase();
-              final genre = (data['genre'] ?? '').toString().toLowerCase();
-              final author = (data['author'] ?? '').toString().toLowerCase();
-
-              return title.contains(lowerQuery) ||
-                  genre.contains(lowerQuery) ||
-                  author.contains(lowerQuery);
-            }).toList();
+        final books = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final title = (data['title'] ?? '').toString().toLowerCase();
+          final genre = (data['genre'] ?? '').toString().toLowerCase();
+          final author = (data['author'] ?? '').toString().toLowerCase();
+          return title.contains(lowerQuery) ||
+              genre.contains(lowerQuery) ||
+              author.contains(lowerQuery);
+        }).toList();
 
         if (books.isEmpty) {
           return const Center(
@@ -217,16 +199,17 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
             return BookCard(
               bookData: books[index].data() as Map<String, dynamic>,
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => BookDetailPage(
-                          bookData: books[index].data() as Map<String, dynamic>,
-                        ),
-                  ),
-                );
-              },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => BookDetailPage(
+        bookData: books[index].data() as Map<String, dynamic>,
+        allBooks: books.map((doc) => doc.data() as Map<String, dynamic>).toList(),
+      ),
+    ),
+  );
+}
+
             );
           },
         );
