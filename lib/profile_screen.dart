@@ -7,6 +7,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'book_grid_category.dart';
 import 'main_navigation.dart';
+import 'package:logger/logger.dart';
+
+final Logger _logger = Logger();
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -15,8 +18,8 @@ class ProfileScreen extends StatelessWidget {
     if (base64String == null || base64String.isEmpty) return null;
     try {
       return base64Decode(base64String);
-    } catch (e) {
-      print('Error decoding image: $e');
+    } catch (e, stackTrace) {
+      _logger.e('Error decoding image', error: e, stackTrace: stackTrace);
       return null;
     }
   }
@@ -42,16 +45,17 @@ class ProfileScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.brown),
           onPressed: () {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => Scaffold(
-        body: BookGridByCategory(),
-        bottomNavigationBar: MainNavigation(),
-      ),
-    ),
-  );
-},
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => Scaffold(
+                      body: BookGridByCategory(),
+                      bottomNavigationBar: MainNavigation(),
+                    ),
+              ),
+            );
+          },
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
