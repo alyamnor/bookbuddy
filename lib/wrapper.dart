@@ -1,4 +1,3 @@
-// wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bookbuddy/main_navigation.dart';
@@ -18,38 +17,37 @@ class Wrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
+
         if (snapshot.hasError) {
           return const Scaffold(
             body: Center(child: Text('Error loading authentication state')),
           );
         }
-        if (snapshot.hasData) {
+
+        final user = snapshot.data;
+        if (user != null) {
           return FutureBuilder<bool>(
-            future: _checkEmailVerification(),
+            future: _checkEmailVerification(user),
             builder: (context, verificationSnapshot) {
-              if (verificationSnapshot.connectionState ==
-                  ConnectionState.waiting) {
+              if (verificationSnapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
               }
-              return verificationSnapshot.data == true
-                  ? const MainNavigation()
-                  : const VerifyEmail();
+              final isVerified = verificationSnapshot.data ?? false;
+              return isVerified ? const MainNavigation() : const VerifyEmail();
             },
           );
         }
+
         return const Login();
       },
     );
   }
+}
 
-  Future<bool> _checkEmailVerification() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      await user.reload();
-      return user.emailVerified;
-    }
-    return false; // User is not logged in
-  }
+// Separate helper function
+Future<bool> _checkEmailVerification(User user) async {
+  await user.reload(); // Refreshes user data
+  return user.emailVerified;
 }

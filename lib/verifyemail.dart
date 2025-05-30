@@ -1,8 +1,8 @@
-// verifyemail.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:bookbuddy/wrapper.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'wrapper.dart';
 
 class VerifyEmail extends StatefulWidget {
   const VerifyEmail({super.key});
@@ -26,13 +26,14 @@ class _VerifyEmailState extends State<VerifyEmail> {
       try {
         await user.sendEmailVerification();
         Get.snackbar(
-          'Link Sent',
+          'Verification Link Sent',
           'A verification link has been sent to ${user.email}',
-          margin: const EdgeInsets.all(30),
           snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
         );
       } catch (e) {
-        Get.snackbar('Error', 'Failed to send verification email');
+        Get.snackbar('Error', 'Failed to send verification email',
+            snackPosition: SnackPosition.BOTTOM);
       }
     }
   }
@@ -41,13 +42,16 @@ class _VerifyEmailState extends State<VerifyEmail> {
     setState(() => isLoading = true);
     try {
       await FirebaseAuth.instance.currentUser?.reload();
-      if (FirebaseAuth.instance.currentUser?.emailVerified == true) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.emailVerified) {
         Get.offAll(() => const Wrapper());
       } else {
-        Get.snackbar('Info', 'Email not verified yet');
+        Get.snackbar('Still Not Verified', 'Please check your email inbox.',
+            snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Error checking verification status');
+      Get.snackbar('Error', 'Could not check verification status',
+          snackPosition: SnackPosition.BOTTOM);
     } finally {
       setState(() => isLoading = false);
     }
@@ -57,37 +61,127 @@ class _VerifyEmailState extends State<VerifyEmail> {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     return Scaffold(
-      appBar: AppBar(title: const Text('Verify Email')),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'A verification email has been sent to ${user?.email ?? "your email address"}. Please check your inbox and follow the link to verify your email.',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: checkVerification,
-                    child: const Text('I\'ve Verified My Email'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: sendVerifyLink,
-                    child: const Text('Resend Verification Email'),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      await FirebaseAuth.instance.signOut();
-                      Get.offAll(() => const Wrapper());
-                    },
-                    child: const Text('Sign Out'),
-                  ),
-                ],
+      body: Stack(
+        children: [
+          // Background image
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/bg.png'),
+                fit: BoxFit.cover,
               ),
             ),
+          ),
+          // Black overlay
+          Container(color: Colors.black.withOpacity(0.7)),
+
+          // Foreground content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back button
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Get.offAll(() => const Wrapper()),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Title
+                        Text(
+                          'BookBuddy',
+                          style: GoogleFonts.concertOne(
+                            textStyle: const TextStyle(
+                              fontSize: 50,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.email_outlined,
+                                    size: 60, color: Colors.white),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'A verification email has been sent to:',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  user?.email ?? 'your email address',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width * 0.7,
+                                  child: ElevatedButton(
+                                    onPressed: checkVerification,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.brown,
+                                      foregroundColor: Colors.white,
+                                      minimumSize: const Size.fromHeight(50),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                    child: const Text('I\'ve Verified My Email'),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: sendVerifyLink,
+                                  child: const Text(
+                                    'Resend Verification Email',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                TextButton(
+                                  onPressed: () async {
+                                    await FirebaseAuth.instance.signOut();
+                                    Get.offAll(() => const Wrapper());
+                                  },
+                                  child: const Text(
+                                    'Sign Out',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      decoration: TextDecoration.underline,
+                                      decorationColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,7 +1,7 @@
-// signup.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'verifyemail.dart';
 import 'login.dart';
 
@@ -16,6 +16,7 @@ class _SignupState extends State<Signup> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
+  bool obscurePassword = true;
 
   Future<void> signUp() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
@@ -31,10 +32,10 @@ class _SignupState extends State<Signup> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+
       await userCredential.user?.sendEmailVerification();
-      Get.snackbar('Success', 'Account created. Please verify your email',
-          snackPosition: SnackPosition.BOTTOM);
-      Get.offAll(() => const VerifyEmail(), transition: Transition.rightToLeft);
+
+      Get.offAll(() => const VerifyEmail());
     } on FirebaseAuthException catch (e) {
       Get.snackbar('Error', e.message ?? 'Sign up failed',
           snackPosition: SnackPosition.BOTTOM);
@@ -49,49 +50,154 @@ class _SignupState extends State<Signup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign Up')),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter email',
-                      labelText: 'Email',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: passwordController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter password',
-                      labelText: 'Password',
-                      border: OutlineInputBorder(),
-                    ),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: signUp,
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    child: const Text('Sign Up'),
-                  ),
-                  TextButton(
-                    onPressed: () =>
-                        Get.to(() => const Login(), transition: Transition.leftToRight),
-                    child: const Text('Already have an account? Login'),
-                  ),
-                ],
+      body: Stack(
+        children: [
+          // Background
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/bg.png'),
+                fit: BoxFit.cover,
               ),
             ),
+          ),
+          Container(color: Colors.black.withOpacity(0.7)),
+
+          // Foreground content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back button
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Title
+                        Text(
+                          'BookBuddy',
+                          style: GoogleFonts.concertOne(
+                            textStyle: const TextStyle(
+                              fontSize: 50,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        const Text(
+                          'Join the world of books',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+
+                        // Email Field
+                        TextField(
+                          controller: emailController,
+                          decoration: InputDecoration(
+                            hintText: 'Enter email',
+                            prefixIcon: const Icon(Icons.email),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.6),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: Colors.brown,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Password Field
+                        TextField(
+                          controller: passwordController,
+                          obscureText: obscurePassword,
+                          decoration: InputDecoration(
+                            hintText: 'Enter password',
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility),
+                              onPressed: () {
+                                setState(() {
+                                  obscurePassword = !obscurePassword;
+                                });
+                              },
+                            ),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.6),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                color: Colors.brown,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Sign Up Button (narrower)
+                        Align(
+                          alignment: Alignment.center,
+                          child: FractionallySizedBox(
+                            widthFactor: 0.7,
+                            child: ElevatedButton(
+                              onPressed: signUp,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.brown,
+                                foregroundColor: Colors.white,
+                                minimumSize: const Size.fromHeight(50),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: const Text('Sign Up'),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Login link
+                        Center(
+                          child: TextButton(
+                            onPressed: () => Get.offAll(() => const Login()),
+                            child: const Text(
+                              'Already have an account? Login',
+                              style: TextStyle(
+                                color: Colors.white,
+                                decoration: TextDecoration.underline,
+                                decorationColor: Colors.white,
+                                decorationThickness: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
