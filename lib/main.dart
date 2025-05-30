@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'dart:io';
-import 'main_navigation.dart';
 import 'theme.dart';
+import 'wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: appTheme,
-      home: const MainNavigation(),
+      home: const Wrapper(), // Assuming you have a Wrapper widget to handle authentication
     );
   }
 }
