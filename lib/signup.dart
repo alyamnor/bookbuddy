@@ -1,13 +1,12 @@
+//signup.dart
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-
 import 'login.dart';
 import 'verifyemail.dart';
 
@@ -27,28 +26,34 @@ class _SignupState extends State<Signup> {
   bool obscurePassword = true;
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(
-      source: ImageSource.gallery,
-    );
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
+ Future<void> _pickImage() async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Reduce quality for smaller file size
+        maxWidth: 800,    // Limit dimensions
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _profileImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to pick image: $e');
     }
   }
 
-  Future<String?> _convertImageToBase64() async {
+ Future<String?> _convertImageToBase64() async {
     if (_profileImage == null) return null;
     try {
       final bytes = await _profileImage!.readAsBytes();
+      if (bytes.length > 2 * 1024 * 1024) { // 2MB limit
+        Get.snackbar('Warning', 'Image is too large (max 2MB)');
+        return null;
+      }
       return base64Encode(bytes);
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to process image: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Error', 'Failed to process image: $e');
       return null;
     }
   }
@@ -79,10 +84,10 @@ class _SignupState extends State<Signup> {
         final String? profileImageBase64 = await _convertImageToBase64();
 
         // Store user data in Firestore
-        await FirebaseFirestore.instance.collection('users').doc(userId).set({
+        await FirebaseFirestore.instance.collection('user-database').doc(userId).set({
           'email': emailController.text.trim(),
           'preferredName': nameController.text.trim(),
-          'profileImageBase64': profileImageBase64,
+          if (profileImageBase64 != null) 'profilePicture': profileImageBase64,
           'createdAt': FieldValue.serverTimestamp(),
         });
 

@@ -29,7 +29,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: appTheme,
-      home: const Wrapper(), // Assuming you have a Wrapper widget to handle authentication
+      home:
+          const Wrapper(), // Assuming you have a Wrapper widget to handle authentication
     );
   }
 }
