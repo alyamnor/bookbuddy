@@ -28,7 +28,9 @@ class _SignupState extends State<Signup> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedFile != null) {
       setState(() {
         _profileImage = File(pickedFile.path);
@@ -42,8 +44,11 @@ class _SignupState extends State<Signup> {
       final bytes = await _profileImage!.readAsBytes();
       return base64Encode(bytes);
     } catch (e) {
-      Get.snackbar('Error', 'Failed to process image: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Failed to process image: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return null;
     }
   }
@@ -52,18 +57,21 @@ class _SignupState extends State<Signup> {
     if (emailController.text.isEmpty ||
         passwordController.text.isEmpty ||
         nameController.text.isEmpty) {
-      Get.snackbar('Error', 'Please fill in all required fields',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please fill in all required fields',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     setState(() => isLoading = true);
     try {
-      final UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
 
       final String? userId = userCredential.user?.uid;
       if (userId != null) {
@@ -82,11 +90,17 @@ class _SignupState extends State<Signup> {
         Get.offAll(() => const VerifyEmail());
       }
     } on FirebaseAuthException catch (e) {
-      Get.snackbar('Error', e.message ?? 'Sign up failed',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        e.message ?? 'Sign up failed',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } catch (e) {
-      Get.snackbar('Error', 'An unexpected error occurred: $e',
-          snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'An unexpected error occurred: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       setState(() => isLoading = false);
     }
@@ -106,7 +120,7 @@ class _SignupState extends State<Signup> {
               ),
             ),
           ),
-          Container(color: Colors.black.withOpacity(0.7)),
+          Container(color: Color.fromRGBO(0, 0, 0, 0.7)),
 
           // Foreground content
           SafeArea(
@@ -120,178 +134,196 @@ class _SignupState extends State<Signup> {
                         children: [
                           // Back button
                           IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Title
-                          Text(
-                            'BookBuddy',
-                            style: GoogleFonts.concertOne(
-                              textStyle: const TextStyle(
-                                fontSize: 50,
+                            icon: const Icon(
+                              Icons.arrow_back,
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
                               ),
+                              onPressed: () => Navigator.pop(context),
                             ),
-                          ),
-                          const SizedBox(height: 15),
-                          const Text(
-                            'Join the world of books',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(height: 40),
+                            const SizedBox(height: 20),
 
-                          // Profile Image Picker
-                          Center(
-                            child: GestureDetector(
-                              onTap: _pickImage,
-                              child: Container(
-                                width: 100,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white.withOpacity(0.6),
-                                  image: _profileImage != null
-                                      ? DecorationImage(
-                                          image: FileImage(_profileImage!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
-                                ),
-                                child: _profileImage == null
-                                    ? const Icon(
-                                        Icons.add_a_photo,
-                                        size: 40,
-                                        color: Colors.brown,
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Preferred Name Field
-                          TextField(
-                            controller: nameController,
-                            decoration: InputDecoration(
-                              hintText: 'Enter preferred name',
-                              prefixIcon: const Icon(Icons.person),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.6),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Colors.brown,
-                                  width: 2,
+                            // Title
+                            Text(
+                              'BookBuddy',
+                              style: GoogleFonts.concertOne(
+                                textStyle: const TextStyle(
+                                  fontSize: 50,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Email Field
-                          TextField(
-                            controller: emailController,
-                            decoration: InputDecoration(
-                              hintText: 'Enter email',
-                              prefixIcon: const Icon(Icons.email),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.6),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
+                            const SizedBox(height: 15),
+                            const Text(
+                              'Join the world of books',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 16,
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Colors.brown,
-                                  width: 2,
+                            ),
+                            const SizedBox(height: 40),
+
+                            // Profile Image Picker
+                            Center(
+                              child: GestureDetector(
+                                onTap: _pickImage,
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color.fromRGBO(255, 255, 255, 0.6),
+                                    image:
+                                        _profileImage != null
+                                            ? DecorationImage(
+                                              image: FileImage(_profileImage!),
+                                              fit: BoxFit.cover,
+                                            )
+                                            : null,
+                                  ),
+                                  child:
+                                      _profileImage == null
+                                          ? const Icon(
+                                            Icons.add_a_photo,
+                                            size: 40,
+                                            color: Colors.brown,
+                                          )
+                                          : null,
                                 ),
                               ),
                             ),
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
-                          // Password Field
-                          TextField(
-                            controller: passwordController,
-                            obscureText: obscurePassword,
-                            decoration: InputDecoration(
-                              hintText: 'Enter password',
-                              prefixIcon: const Icon(Icons.lock),
-                              suffixIcon: IconButton(
-                                icon: Icon(obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility),
-                                onPressed: () {
-                                  setState(() {
-                                    obscurePassword = !obscurePassword;
-                                  });
-                                },
-                              ),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.6),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: const BorderSide(
-                                  color: Colors.brown,
-                                  width: 2,
+                            // Preferred Name Field
+                            TextField(
+                              controller: nameController,
+                              decoration: InputDecoration(
+                                hintText: 'Enter preferred name',
+                                prefixIcon: const Icon(Icons.person),
+                                filled: true,
+                                fillColor: const Color.fromRGBO(255, 255, 255, 0.6),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Sign Up Button (narrower)
-                          Align(
-                            alignment: Alignment.center,
-                            child: FractionallySizedBox(
-                              widthFactor: 0.7,
-                              child: ElevatedButton(
-                                onPressed: signUp,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.brown,
-                                  foregroundColor: Colors.white,
-                                  minimumSize: const Size.fromHeight(50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Colors.brown,
+                                    width: 2,
                                   ),
                                 ),
-                                child: const Text('Sign Up'),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
+                            const SizedBox(height: 16),
 
-                          // Login link
-                          Center(
-                            child: TextButton(
-                              onPressed: () => Get.offAll(() => const Login()),
-                              child: const Text(
-                                'Already have an account? Login',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  decoration: TextDecoration.underline,
-                                  decorationColor: Colors.white,
-                                  decorationThickness: 2,
+                            // Email Field
+                            TextField(
+                              controller: emailController,
+                              decoration: InputDecoration(
+                                hintText: 'Enter email',
+                                prefixIcon: const Icon(Icons.email),
+                                filled: true,
+                                fillColor: const Color.fromRGBO(
+                                  255,
+                                  255,
+                                  255,
+                                  0.6,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Colors.brown,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Password Field
+                            TextField(
+                              controller: passwordController,
+                              obscureText: obscurePassword,
+                              decoration: InputDecoration(
+                                hintText: 'Enter password',
+                                prefixIcon: const Icon(Icons.lock),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      obscurePassword = !obscurePassword;
+                                    });
+                                  },
+                                ),
+                                filled: true,
+                                fillColor: const Color.fromRGBO(
+                                  255,
+                                  255,
+                                  255,
+                                  0.6,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                    color: Colors.brown,
+                                    width: 2,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 24),
+
+                            // Sign Up Button (narrower)
+                            Align(
+                              alignment: Alignment.center,
+                              child: FractionallySizedBox(
+                                widthFactor: 0.7,
+                                child: ElevatedButton(
+                                  onPressed: signUp,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.brown,
+                                    foregroundColor: Colors.white,
+                                    minimumSize: const Size.fromHeight(50),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                  child: const Text('Sign Up'),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Login link
+                            Center(
+                              child: TextButton(
+                                onPressed:
+                                    () => Get.offAll(() => const Login()),
+                                child: const Text(
+                                  'Already have an account? Login',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: Colors.white,
+                                    decorationThickness: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
             ),
           ),
         ],

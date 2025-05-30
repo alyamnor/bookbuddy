@@ -73,7 +73,7 @@ class _VerifyEmailState extends State<VerifyEmail> {
             ),
           ),
           // Black overlay
-          Container(color: Colors.black.withOpacity(0.7)),
+          Container(color: Color.fromRGBO(0, 0, 0, 0.7)),
 
           // Foreground content
           SafeArea(

@@ -67,8 +67,7 @@ class _ForgotState extends State<Forgot> {
               ),
             ),
           ),
-          Container(color: Colors.black.withOpacity(0.7)),
-
+          Container(color: const Color.fromRGBO(0, 0, 0, 0.7)),
           // Foreground
           SafeArea(
             child: Padding(
@@ -117,7 +116,7 @@ class _ForgotState extends State<Forgot> {
                               hintText: 'Enter email',
                               prefixIcon: const Icon(Icons.email),
                               filled: true,
-                              fillColor: Colors.white.withOpacity(0.6),
+                              fillColor: const Color.fromRGBO(255, 255, 255, 0.6),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
