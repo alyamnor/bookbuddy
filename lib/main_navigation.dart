@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'book_grid_category.dart';
-import 'book_recognition.dart';
 import 'profile_screen.dart';
+import 'my_image_picker.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -17,7 +17,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const BookGridByCategory(),
-    const MyImagePicker(),
+    const MyImagePicker(), // Replace [] with your actual list of books if available
     const ProfileScreen(),
   ];
 
