@@ -8,6 +8,8 @@ import 'dart:typed_data';
 import 'book_grid_category.dart';
 import 'main_navigation.dart';
 import 'package:logger/logger.dart';
+import 'bookmark.dart';
+import 'bookshelf.dart';
 
 final Logger _logger = Logger();
 
@@ -127,9 +129,23 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 30),
-                  _buildListTile(Icons.library_books, 'Bookshelf', () {}),
+                  _buildListTile(Icons.library_books, 'Bookshelf', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BookshelfPage(),
+                      ),
+                    );
+                  }),
                   const Divider(height: 1),
-                  _buildListTile(Icons.bookmark, 'Bookmark', () {}),
+                  _buildListTile(Icons.bookmark, 'Bookmark', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const BookmarkPage(),
+                      ),
+                    );
+                  }),
                   const Divider(height: 1),
                   _buildListTile(Icons.settings, 'Account settings', () {}),
                   const Divider(height: 1),
