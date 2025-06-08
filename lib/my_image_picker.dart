@@ -9,7 +9,6 @@ import 'package:string_similarity/string_similarity.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image/image.dart' as img;
 import 'package:path_provider/path_provider.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'book_detail.dart';
 
 class MyImagePicker extends StatefulWidget {

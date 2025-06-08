@@ -6,11 +6,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BookDetailPage extends StatefulWidget {
   final Map<String, dynamic> bookData;
   final List<Map<String, dynamic>> allBooks;
-  final File? processedImage; // Added for preprocessed image
+  final File? processedImage;
 
   const BookDetailPage({
     super.key,
@@ -30,21 +31,40 @@ class _BookDetailPageState extends State<BookDetailPage> {
   bool _showProcessedImage = false;
   final TextEditingController _commentController = TextEditingController();
   List<Map<String, dynamic>> _comments = [];
+  double _userRating = 0;
+  String? _bookId;
 
   @override
   void initState() {
     super.initState();
+    _initializeBookId();
     _checkBookmarkStatus();
     _fetchComments();
+    _fetchUserRating();
+  }
+
+  Future<void> _initializeBookId() async {
+    if (widget.bookData['id'] != null) {
+      setState(() => _bookId = widget.bookData['id']);
+    } else {
+      final bookRef = await FirebaseFirestore.instance
+          .collection('book-database')
+          .where('title', isEqualTo: widget.bookData['title'])
+          .limit(1)
+          .get();
+      if (bookRef.docs.isNotEmpty) {
+        setState(() => _bookId = bookRef.docs.first.id);
+      }
+    }
   }
 
   Future<void> _checkBookmarkStatus() async {
-    if (userId == null) return;
+    if (userId == null || _bookId == null) return;
     final doc = await FirebaseFirestore.instance
         .collection('user-database')
         .doc(userId)
-        .collection('book-mark')
-        .doc(widget.bookData['title'])
+        .collection('bookmarks')
+        .doc(_bookId)
         .get();
 
     setState(() {
@@ -57,11 +77,15 @@ class _BookDetailPageState extends State<BookDetailPage> {
       Fluttertoast.showToast(msg: 'Please log in to bookmark');
       return;
     }
+    if (_bookId == null) {
+      Fluttertoast.showToast(msg: 'Book ID not found');
+      return;
+    }
     final docRef = FirebaseFirestore.instance
         .collection('user-database')
         .doc(userId)
-        .collection('book-mark')
-        .doc(widget.bookData['title']);
+        .collection('bookmarks')
+        .doc(_bookId);
 
     try {
       if (_isBookmarked) {
@@ -70,9 +94,11 @@ class _BookDetailPageState extends State<BookDetailPage> {
         Fluttertoast.showToast(msg: 'Bookmark removed');
       } else {
         await docRef.set({
+          'bookId': _bookId,
           'title': widget.bookData['title'],
           'author': widget.bookData['author'],
           'cover-image-url': widget.bookData['cover-image-url'],
+          'genre': widget.bookData['genre'] ?? '',
         });
         _logger.i('Bookmarked: ${widget.bookData['title']}');
         Fluttertoast.showToast(msg: 'Bookmarked');
@@ -87,10 +113,12 @@ class _BookDetailPageState extends State<BookDetailPage> {
   }
 
   Future<void> _fetchComments() async {
-    if (userId == null) return;
+    if (_bookId == null) return;
     final snapshot = await FirebaseFirestore.instance
+        .collection('book-database')
+        .doc(_bookId)
         .collection('book-comments')
-        .doc(widget.bookData['title'])
+        .doc('book-review')
         .collection('comments')
         .orderBy('timestamp', descending: true)
         .get();
@@ -101,11 +129,13 @@ class _BookDetailPageState extends State<BookDetailPage> {
   }
 
   Future<void> _addComment() async {
-    if (userId == null || _commentController.text.trim().isEmpty) return;
+    if (userId == null || _commentController.text.trim().isEmpty || _bookId == null) return;
     try {
       await FirebaseFirestore.instance
+          .collection('book-database')
+          .doc(_bookId)
           .collection('book-comments')
-          .doc(widget.bookData['title'])
+          .doc('book-review')
           .collection('comments')
           .add({
         'userId': userId,
@@ -119,6 +149,43 @@ class _BookDetailPageState extends State<BookDetailPage> {
     } catch (e) {
       _logger.e('Comment error', error: e);
       Fluttertoast.showToast(msg: 'Failed to add comment');
+    }
+  }
+
+  Future<void> _fetchUserRating() async {
+    if (userId == null || _bookId == null) return;
+    final doc = await FirebaseFirestore.instance
+        .collection('user-database')
+        .doc(userId)
+        .collection('ratings')
+        .doc(_bookId)
+        .get();
+    if (doc.exists) {
+      setState(() {
+        _userRating = (doc.data()?['rating'] ?? 0).toDouble();
+      });
+    }
+  }
+
+  Future<void> _updateRating(double rating) async {
+    if (userId == null || _bookId == null) return;
+    try {
+      await FirebaseFirestore.instance
+          .collection('user-database')
+          .doc(userId)
+          .collection('ratings')
+          .doc(_bookId)
+          .set({
+        'rating': rating.toInt(),
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      setState(() {
+        _userRating = rating;
+      });
+      Fluttertoast.showToast(msg: 'Rating submitted');
+    } catch (e) {
+      _logger.e('Rating error', error: e);
+      Fluttertoast.showToast(msg: 'Failed to submit rating');
     }
   }
 
@@ -235,6 +302,22 @@ class _BookDetailPageState extends State<BookDetailPage> {
                     fontStyle: FontStyle.italic,
                     color: Colors.grey,
                   ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: RatingBar.builder(
+                  initialRating: _userRating,
+                  minRating: 1,
+                  direction: Axis.horizontal,
+                  allowHalfRating: false,
+                  itemCount: 5,
+                  itemSize: 30,
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Color(0xFF987554),
+                  ),
+                  onRatingUpdate: _updateRating,
                 ),
               ),
               const SizedBox(height: 20),

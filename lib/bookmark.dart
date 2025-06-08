@@ -5,7 +5,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'book_detail.dart'; // Import the BookDetailPage
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'book_detail.dart';
 
 class BookmarkPage extends StatefulWidget {
   const BookmarkPage({super.key});
@@ -34,7 +35,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
       final snapshot = await FirebaseFirestore.instance
           .collection('user-database')
           .doc(userId)
-          .collection('book-mark')
+          .collection('bookmarks')
           .get();
 
       setState(() {
@@ -46,8 +47,28 @@ class _BookmarkPageState extends State<BookmarkPage> {
     }
   }
 
+  Future<void> _updateRating(String bookId, int rating) async {
+    if (userId == null) return;
+    try {
+      await FirebaseFirestore.instance
+          .collection('user-database')
+          .doc(userId)
+          .collection('ratings')
+          .doc(bookId)
+          .set({
+            'rating': rating,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+      Fluttertoast.showToast(msg: 'Rating updated');
+      _fetchBookmarks();
+    } catch (e) {
+      _logger.e('Error updating rating', error: e);
+      Fluttertoast.showToast(msg: 'Failed to update rating');
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -64,6 +85,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                 itemCount: bookmarks.length,
                 itemBuilder: (context, index) {
                   final book = bookmarks[index];
+                  final bookId = book['bookId'] ?? book['title']; // Fallback to title
                   return Card(
                     margin: const EdgeInsets.only(bottom: 16.0),
                     child: ListTile(
@@ -85,9 +107,30 @@ class _BookmarkPageState extends State<BookmarkPage> {
                           color: const Color(0xFF987554),
                         ),
                       ),
-                      subtitle: Text(
-                        'by ${book['author'] ?? 'Unknown Author'}',
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'by ${book['author'] ?? 'Unknown Author'}',
+                            style: const TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          RatingBar.builder(
+                            initialRating: (book['rating'] ?? 0).toDouble(),
+                            minRating: 1,
+                            direction: Axis.horizontal,
+                            allowHalfRating: false,
+                            itemCount: 5,
+                            itemSize: 20,
+                            itemBuilder: (context, _) => const Icon(
+                              Icons.star,
+                              color: Color(0xFF987554),
+                            ),
+                            onRatingUpdate: (rating) {
+                              _updateRating(bookId, rating.toInt());
+                            },
+                          ),
+                        ],
                       ),
                       onTap: () {
                         Navigator.push(
@@ -95,7 +138,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                           MaterialPageRoute(
                             builder: (context) => BookDetailPage(
                               bookData: book,
-                              allBooks: [], // Pass appropriate allBooks list if needed
+                              allBooks: [],
                               processedImage: null,
                             ),
                           ),
@@ -103,9 +146,9 @@ class _BookmarkPageState extends State<BookmarkPage> {
                       },
                     ),
                   );
-                },
-              ),
-      ),
-    );
-  }
-}
+                  },
+                ),
+          ),
+        );
+      }
+    }
