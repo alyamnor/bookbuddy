@@ -1,3 +1,4 @@
+import 'package:bookbuddy/setting.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -147,7 +148,14 @@ class ProfileScreen extends StatelessWidget {
                     );
                   }),
                   const Divider(height: 1),
-                  _buildListTile(Icons.settings, 'Account settings', () {}),
+                  _buildListTile(Icons.settings, 'Account settings', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SettingsPage(),
+                      ),
+                    );
+                  }),
                   const Divider(height: 1),
                   _buildListTile(
                     Icons.logout,
