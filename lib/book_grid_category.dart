@@ -16,11 +16,13 @@ class BookGridByCategory extends StatefulWidget {
 class _BookGridByCategoryState extends State<BookGridByCategory> {
   String searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _allBooks = []; // Cache for full book database
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    _fetchAllBooks(); // Fetch full book list on init
   }
 
   @override
@@ -28,6 +30,17 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetchAllBooks() async {
+    try {
+      final snapshot = await FirebaseFirestore.instance.collection('book-database').get();
+      setState(() {
+        _allBooks = snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
+      });
+    } catch (e) {
+      print('Error fetching all books: $e');
+    }
   }
 
   void _onSearchChanged() {
@@ -52,6 +65,30 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
       'query': query,
       'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  Future<String> _determineSearchType(String query) async {
+    final lowerQuery = query.toLowerCase();
+    // List of known genres
+    const knownGenres = ['romance', 'fantasy', 'self help', 'slice of life', 'horror'];
+    
+    // Check if query matches a genre
+    if (knownGenres.contains(lowerQuery)) {
+      return 'genre';
+    }
+
+    // Check if query matches an author
+    final authorSnapshot = await FirebaseFirestore.instance
+        .collection('book-database')
+        .where('author', isEqualTo: query)
+        .limit(1)
+        .get();
+    if (authorSnapshot.docs.isNotEmpty) {
+      return 'author';
+    }
+
+    // Default to title search
+    return 'title';
   }
 
   @override
@@ -312,9 +349,8 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
                             MaterialPageRoute(
                               builder: (context) => BookDetailPage(
                                 bookData: recommendedBooks[index]['data'],
-                                allBooks: recommendedBooks
-                                    .map((e) => e['data'] as Map<String, dynamic>)
-                                    .toList(),
+                                allBooks: _allBooks, // Use full book database
+                                searchType: 'genre', // Use genre for recommendations
                               ),
                             ),
                           );
@@ -345,7 +381,7 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
           final query = searchQuery.toLowerCase();
 
           final matchesQuery =
-              title.contains(query) || genre.contains(query) || author.contains(query);
+              query.isEmpty || title.contains(query) || genre.contains(query) || author.contains(query);
           final matchesCategory =
               genre == category.toLowerCase() || bookTitles.contains(data['title']);
           return matchesQuery && matchesCategory;
@@ -389,10 +425,9 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => BookDetailPage(
-                                bookData: books[index].data()! as Map<String, dynamic>,
-                                allBooks: books
-                                    .map((doc) => doc.data() as Map<String, dynamic>)
-                                    .toList(),
+                                bookData: books[index].data() as Map<String, dynamic>,
+                                allBooks: _allBooks, // Use full book database
+                                searchType: 'genre', // Use genre for category
                               ),
                             ),
                           );
@@ -411,56 +446,65 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
   }
 
   Widget _buildSearchResults(String query) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('book-database').snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+    return FutureBuilder<String>(
+      future: _determineSearchType(query),
+      builder: (context, searchTypeSnapshot) {
+        if (!searchTypeSnapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+        final searchType = searchTypeSnapshot.data!;
 
-        final lowerQuery = query.toLowerCase();
-        final books = snapshot.data!.docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          final title = (data['title'] ?? '').toString().toLowerCase();
-          final genre = (data['genre'] ?? '').toString().toLowerCase();
-          final author = (data['author'] ?? '').toString().toLowerCase();
-          return title.contains(lowerQuery) ||
-              genre.contains(lowerQuery) ||
-              author.contains(lowerQuery);
-        }).toList();
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('book-database').snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        if (books.isEmpty) {
-          return const Center(
-            child: Text(
-              'No books found.',
-              style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-            ),
-          );
-        }
+            final lowerQuery = query.toLowerCase();
+            final books = snapshot.data!.docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              final title = (data['title'] ?? '').toString().toLowerCase();
+              final genre = (data['genre'] ?? '').toString().toLowerCase();
+              final author = (data['author'] ?? '').toString().toLowerCase();
+              return title.contains(lowerQuery) ||
+                  genre.contains(lowerQuery) ||
+                  author.contains(lowerQuery);
+            }).toList();
 
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.65,
-          ),
-          itemCount: books.length,
-          itemBuilder: (context, index) {
-            return BookCard(
-              bookData: books[index].data() as Map<String, dynamic>,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => BookDetailPage(
-                      bookData: books[index].data() as Map<String, dynamic>,
-                      allBooks: books
-                          .map((doc) => doc.data() as Map<String, dynamic>)
-                          .toList(),
-                    ),
-                  ),
+            if (books.isEmpty) {
+              return const Center(
+                child: Text(
+                  'No books found.',
+                  style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                ),
+              );
+            }
+
+            return GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.65,
+              ),
+              itemCount: books.length,
+              itemBuilder: (context, index) {
+                return BookCard(
+                  bookData: books[index].data() as Map<String, dynamic>,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => BookDetailPage(
+                          bookData: books[index].data() as Map<String, dynamic>,
+                          allBooks: _allBooks, // Use full book database
+                          searchType: searchType, // Dynamic search type
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             );

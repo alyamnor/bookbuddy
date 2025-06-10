@@ -137,9 +137,9 @@ Widget build(BuildContext context) {
                           context,
                           MaterialPageRoute(
                             builder: (context) => BookDetailPage(
-                              bookData: book,
-                              allBooks: [],
-                              processedImage: null,
+                                bookData: bookmarks[index],
+                                allBooks: bookmarks,
+                                searchType: 'category',
                             ),
                           ),
                         );

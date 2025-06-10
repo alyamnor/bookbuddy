@@ -5,7 +5,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'book_detail.dart';
 
 class BookshelfPage extends StatefulWidget {
   const BookshelfPage({super.key});
@@ -200,16 +199,6 @@ class _BookshelfPageState extends State<BookshelfPage> {
                 itemBuilder: (context, index) {
                   final book = userBooks[index];
                   return GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BookDetailPage(
-                          bookData: book,
-                          allBooks: [],
-                          processedImage: null,
-                        ),
-                      ),
-                    ),
                     child: Column(
                       children: [
                         Expanded(

@@ -12,12 +12,14 @@ class BookDetailPage extends StatefulWidget {
   final Map<String, dynamic> bookData;
   final List<Map<String, dynamic>> allBooks;
   final File? processedImage;
+  final String searchType; // 'title', 'author', or 'genre'
 
   const BookDetailPage({
     super.key,
     required this.bookData,
     required this.allBooks,
     this.processedImage,
+    required this.searchType,
   });
 
   @override
@@ -189,18 +191,54 @@ class _BookDetailPageState extends State<BookDetailPage> {
     }
   }
 
+  List<Map<String, dynamic>> _getRecommendedBooks() {
+    _logger.i('Recommendation searchType: ${widget.searchType}');
+    final currentBookId = widget.bookData['id'];
+    final currentTitle = widget.bookData['title']?.toLowerCase() ?? '';
+    final currentGenre = widget.bookData['genre']?.toLowerCase() ?? '';
+    final currentAuthor = widget.bookData['author']?.toLowerCase() ?? '';
+
+    List<Map<String, dynamic>> filteredBooks = widget.allBooks.where((book) {
+      final isSameBook = book['id'] == currentBookId || (book['title']?.toLowerCase() ?? '') == currentTitle;
+      if (isSameBook) return false;
+
+      switch (widget.searchType) {
+        case 'title':
+          return (book['genre']?.toLowerCase() ?? '') == currentGenre ||
+                 (book['author']?.toLowerCase() ?? '') == currentAuthor;
+        case 'author':
+          return (book['genre']?.toLowerCase() ?? '') == currentGenre ||
+                 (book['author']?.toLowerCase() ?? '') == currentAuthor;
+        case 'genre':
+        default:
+          return (book['genre']?.toLowerCase() ?? '') == currentGenre;
+      }
+    }).toList();
+
+    if (widget.searchType == 'author') {
+      filteredBooks.sort((a, b) {
+        final aAuthorMatch = (a['author']?.toLowerCase() ?? '') == currentAuthor ? 1 : 0;
+        final bAuthorMatch = (b['author']?.toLowerCase() ?? '') == currentAuthor ? 1 : 0;
+        if (bAuthorMatch != aAuthorMatch) {
+          return bAuthorMatch - aAuthorMatch;
+        }
+        // Secondary sort by year-published (newer first)
+        final aYear = a['year-published'] ?? 0;
+        final bYear = b['year-published'] ?? 0;
+        return bYear.compareTo(aYear);
+      });
+    }
+
+    return filteredBooks.take(20).toList(); // Limit to 5 recommendations
+  }
+
   @override
   Widget build(BuildContext context) {
     final imageUrl = widget.bookData['cover-image-url']?.isNotEmpty == true
         ? widget.bookData['cover-image-url']
         : 'https://via.placeholder.com/150';
     final genre = widget.bookData['genre'] ?? 'Unknown';
-    final sameGenreBooks = widget.allBooks
-        .where(
-          (book) =>
-              book['genre'] == genre && book['title'] != widget.bookData['title'],
-        )
-        .toList();
+    final recommendedBooks = _getRecommendedBooks();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -370,14 +408,14 @@ class _BookDetailPageState extends State<BookDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                sameGenreBooks.isNotEmpty
+                recommendedBooks.isNotEmpty
                     ? SizedBox(
                         height: 180,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: sameGenreBooks.length,
+                          itemCount: recommendedBooks.length,
                           itemBuilder: (context, index) {
-                            final book = sameGenreBooks[index];
+                            final book = recommendedBooks[index];
                             final recImageUrl = book['cover-image-url']?.isNotEmpty == true
                                 ? book['cover-image-url']
                                 : 'https://via.placeholder.com/80';
@@ -390,6 +428,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                                       bookData: book,
                                       allBooks: widget.allBooks,
                                       processedImage: null,
+                                      searchType: widget.searchType,
                                     ),
                                   ),
                                 );

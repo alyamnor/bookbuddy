@@ -113,14 +113,14 @@ class _MyImagePickerState extends State<MyImagePicker> {
     try {
       // Initial OCR to detect text regions
       final inputImage = InputImage.fromFilePath(_image!.path);
-      final TextRecognizer textRecognizer = TextRecognizer(
+      final textRecognizer = TextRecognizer(
         script: TextRecognitionScript.latin,
       );
       final RecognizedText initialText = await textRecognizer.processImage(
         inputImage,
       );
 
-      // Preprocess with text region data
+      // Preprocess image with text region data
       _processedImage = await _preprocessImage(_image!, initialText);
       final processedInput = InputImage.fromFilePath(_processedImage!.path);
       final RecognizedText recognizedText = await textRecognizer.processImage(
@@ -135,10 +135,10 @@ class _MyImagePickerState extends State<MyImagePicker> {
       _detectedTitle = textAnalysis['title'] ?? '';
       _detectedAuthor = textAnalysis['author'] ?? '';
 
-      // Fetch all books for recommendations
+      // Fetch all books for recommendations, including ID
       final snapshot =
           await FirebaseFirestore.instance.collection('book-database').get();
-      _allBooks = snapshot.docs.map((doc) => doc.data()).toList();
+      _allBooks = snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
 
       await _searchBookWithML(scannedText, _detectedTitle, _detectedAuthor);
       await textRecognizer.close();
@@ -521,15 +521,22 @@ class _MyImagePickerState extends State<MyImagePicker> {
                           const SizedBox(height: 12),
                           ElevatedButton.icon(
                             onPressed: () {
+                              // Determine searchType dynamically based on OCR output
+                              String searchType = 'title'; // Default
+                              if (_bookData!.containsKey('author') && _bookData!['author'] != null && _bookData!['author'].isNotEmpty) {
+                                searchType = 'author';
+                              } else if (_bookData!.containsKey('genre') && _bookData!['genre'] != null && _bookData!['genre'].isNotEmpty) {
+                                searchType = 'genre';
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder:
-                                      (_) => BookDetailPage(
-                                        bookData: _bookData!,
-                                        allBooks: _allBooks,
-                                        processedImage: _processedImage,
-                                      ),
+                                  builder: (_) => BookDetailPage(
+                                    bookData: _bookData!,
+                                    allBooks: _allBooks,
+                                    processedImage: _processedImage,
+                                    searchType: searchType, // Add valid searchType
+                                  ),
                                 ),
                               );
                             },
