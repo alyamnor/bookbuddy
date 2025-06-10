@@ -31,12 +31,13 @@ class SettingsPageState extends State<SettingsPage> {
   Future<void> _fetchProfile() async {
     if (user == null) return;
     try {
-      final doc = await FirebaseFirestore.instance
-          .collection('user-database')
-          .doc(user!.uid)
-          .collection('profile')
-          .doc('info')
-          .get();
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('user-database')
+              .doc(user!.uid)
+              .collection('profile')
+              .doc('info')
+              .get();
       if (doc.exists) {
         setState(() {
           _nameController.text = doc.data()?['name'] ?? user!.displayName ?? '';
@@ -63,7 +64,8 @@ class SettingsPageState extends State<SettingsPage> {
       if (_emailController.text.trim() != user!.email) {
         await user!.verifyBeforeUpdateEmail(_emailController.text.trim());
         Fluttertoast.showToast(
-            msg: 'Verification email sent. Please verify your new email.');
+          msg: 'Verification email sent. Please verify your new email.',
+        );
       }
 
       // Update Firestore
@@ -73,10 +75,10 @@ class SettingsPageState extends State<SettingsPage> {
           .collection('profile')
           .doc('info')
           .set({
-        'name': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'name': _nameController.text.trim(),
+            'email': _emailController.text.trim(),
+            'timestamp': FieldValue.serverTimestamp(),
+          });
 
       Fluttertoast.showToast(msg: 'Profile updated successfully');
       _logger.i('Profile updated for user: ${user!.uid}');
@@ -92,7 +94,10 @@ class SettingsPageState extends State<SettingsPage> {
     try {
       await FirebaseAuth.instance.signOut();
       Fluttertoast.showToast(msg: 'Signed out successfully');
-      Navigator.pushReplacementNamed(context, '/login'); // Adjust route as needed
+      Navigator.pushReplacementNamed(
+        context,
+        '/login',
+      ); // Adjust route as needed
     } catch (e) {
       _logger.e('Error signing out', error: e);
       Fluttertoast.showToast(msg: 'Failed to sign out');
@@ -121,91 +126,100 @@ class SettingsPageState extends State<SettingsPage> {
         backgroundColor: Colors.white,
       ),
       body: SafeArea(
-        child: user == null
-            ? const Center(child: Text('Please log in to view settings'))
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Edit Profile',
-                      style: GoogleFonts.concertOne(
-                        fontSize: 18,
-                        color: const Color(0xFF987554),
-                        fontWeight: FontWeight.bold,
+        child:
+            user == null
+                ? const Center(child: Text('Please log in to view settings'))
+                : SingleChildScrollView(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Edit Profile',
+                        style: GoogleFonts.concertOne(
+                          fontSize: 18,
+                          color: const Color(0xFF987554),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                controller: _nameController,
-                                decoration: InputDecoration(
-                                  labelText: 'Name',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFF987554),
-                                      width: 2,
+                      const SizedBox(height: 16),
+                      Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  controller: _nameController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Name',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFF987554),
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
+                                  validator:
+                                      (value) =>
+                                          value!.trim().isEmpty
+                                              ? 'Name is required'
+                                              : null,
                                 ),
-                                validator: (value) =>
-                                    value!.trim().isEmpty ? 'Name is required' : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _emailController,
-                                decoration: InputDecoration(
-                                  labelText: 'Email',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: const BorderSide(
-                                      color: Color(0xFF987554),
-                                      width: 2,
+                                const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _emailController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Email',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      borderSide: const BorderSide(
+                                        color: Color(0xFF987554),
+                                        width: 2,
+                                      ),
                                     ),
                                   ),
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value!.trim().isEmpty) {
+                                      return 'Email is required';
+                                    }
+                                    if (!RegExp(
+                                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                    ).hasMatch(value.trim())) {
+                                      return 'Enter a valid email';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                keyboardType: TextInputType.emailAddress,
-                                validator: (value) {
-                                  if (value!.trim().isEmpty) {
-                                    return 'Email is required';
-                                  }
-                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                      .hasMatch(value.trim())) {
-                                    return 'Enter a valid email';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 24),
-                              _isLoading
-                                  ? const CircularProgressIndicator(
+                                const SizedBox(height: 24),
+                                _isLoading
+                                    ? const CircularProgressIndicator(
                                       color: Color(0xFF987554),
                                     )
-                                  : ElevatedButton(
+                                    : ElevatedButton(
                                       onPressed: _saveProfile,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF987554),
+                                        backgroundColor: const Color(
+                                          0xFF987554,
+                                        ),
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
                                         ),
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 32,
@@ -214,30 +228,32 @@ class SettingsPageState extends State<SettingsPage> {
                                       ),
                                       child: Text(
                                         'Save Changes',
-                                        style: GoogleFonts.concertOne(fontSize: 16),
+                                        style: GoogleFonts.concertOne(
+                                          fontSize: 16,
+                                        ),
                                       ),
                                     ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    Center(
-                      child: TextButton(
-                        onPressed: _signOut,
-                        child: Text(
-                          'Sign Out',
-                          style: GoogleFonts.concertOne(
-                            fontSize: 16,
-                            color: Colors.red,
+                      const SizedBox(height: 32),
+                      Center(
+                        child: TextButton(
+                          onPressed: _signOut,
+                          child: Text(
+                            'Sign Out',
+                            style: GoogleFonts.concertOne(
+                              fontSize: 16,
+                              color: Colors.red,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
       ),
     );
   }
