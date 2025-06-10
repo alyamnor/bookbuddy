@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'book_detail.dart';
 
 class BookmarkPage extends StatefulWidget {
@@ -47,108 +46,216 @@ class _BookmarkPageState extends State<BookmarkPage> {
     }
   }
 
-  Future<void> _updateRating(String bookId, int rating) async {
-    if (userId == null) return;
+  Future<void> _removeBookmark(String bookId, String title) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        title: Text(
+          'Remove Bookmark',
+          style: GoogleFonts.poppins(
+            fontSize: 24,
+            color: const Color(0xFF987554),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to remove "$title" from your bookmarks?',
+          style: GoogleFonts.poppins(color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.poppins(color: const Color(0xFF987554)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Remove',
+              style: GoogleFonts.poppins(color: const Color(0xFFFF0000)),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('user-database')
+            .doc(userId)
+            .collection('bookmarks')
+            .doc(bookId)
+            .delete();
+        _fetchBookmarks();
+        Fluttertoast.showToast(msg: 'Bookmark removed');
+      } catch (e) {
+        _logger.e('Error removing bookmark', error: e);
+        Fluttertoast.showToast(msg: 'Failed to remove bookmark');
+      }
+    }
+  }
+
+  Future<Map<String, dynamic>> _fetchFullBookData(String bookId) async {
     try {
-      await FirebaseFirestore.instance
-          .collection('user-database')
-          .doc(userId)
-          .collection('ratings')
+      final doc = await FirebaseFirestore.instance
+          .collection('book-database')
           .doc(bookId)
-          .set({
-            'rating': rating,
-            'timestamp': FieldValue.serverTimestamp(),
-          });
-      Fluttertoast.showToast(msg: 'Rating updated');
-      _fetchBookmarks();
+          .get();
+      return doc.exists ? doc.data()! : {};
     } catch (e) {
-      _logger.e('Error updating rating', error: e);
-      Fluttertoast.showToast(msg: 'Failed to update rating');
+      _logger.e('Error fetching full book data', error: e);
+      return {};
     }
   }
 
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'My Bookmark',
-          style: GoogleFonts.concertOne(fontSize: 20, color: const Color(0xFF987554)),
-        ),
         backgroundColor: Colors.white,
       ),
-      body: SafeArea(
-        child: bookmarks.isEmpty
-            ? const Center(child: Text('No bookmarks yet'))
-            : ListView.builder(
+      body: Container(
+        color: const Color(0xFFF5F5F0),
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
                 padding: const EdgeInsets.all(16.0),
-                itemCount: bookmarks.length,
-                itemBuilder: (context, index) {
-                  final book = bookmarks[index];
-                  final bookId = book['bookId'] ?? book['title']; // Fallback to title
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16.0),
-                    child: ListTile(
-                      leading: CachedNetworkImage(
-                        imageUrl: book['cover-image-url'] ?? 'https://via.placeholder.com/80',
-                        width: 80,
-                        height: 120,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) {
-                          _logger.e('Failed to load bookmark image', error: error);
-                          return const Icon(Icons.broken_image, size: 50);
+                child: Text(
+                  'My Bookmark',
+                  style: GoogleFonts.poppins(
+                    fontSize: 32,
+                    color: const Color(0xFF987554),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: bookmarks.isEmpty
+                    ? const Center(child: Text('No bookmarks yet'))
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 0.65,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                        itemCount: bookmarks.length,
+                        itemBuilder: (context, index) {
+                          final book = bookmarks[index];
+                          final bookId = book['bookId'] ?? book['title'];
+                          return GestureDetector(
+                            onTap: () async {
+                              final fullBookData = await _fetchFullBookData(bookId);
+                              if (fullBookData.isNotEmpty) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BookDetailPage(
+                                      bookData: {
+                                        ...book,
+                                        ...fullBookData,
+                                      },
+                                      allBooks: bookmarks,
+                                      searchType: 'category',
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                Fluttertoast.showToast(msg: 'Failed to load book details');
+                              }
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                                    child: CachedNetworkImage(
+                                      imageUrl: book['cover-image-url'] ?? 'https://via.placeholder.com/150',
+                                      fit: BoxFit.cover,
+                                      height: 120,
+                                      width: double.infinity,
+                                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                      errorWidget: (context, url, error) {
+                                        _logger.e('Failed to load bookmark image', error: error);
+                                        return const Icon(Icons.broken_image, size: 50);
+                                      },
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                book['title'] ?? 'Unknown Title',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 16,
+                                                  color: const Color(0xFF000000),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                'by ${book['author'] ?? 'Unknown Author'}',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 14,
+                                                  color: Colors.black54,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                              Text(
+                                                book['store'] ?? 'Unknown Store',
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: 12,
+                                                  color: Colors.black,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.bookmark,
+                                            color: Color(0xFFFF0000),
+                                          ),
+                                          onPressed: () => _removeBookmark(bookId, book['title'] ?? 'Unknown Title'),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
                         },
                       ),
-                      title: Text(
-                        book['title'] ?? 'Unknown Title',
-                        style: GoogleFonts.concertOne(
-                          fontSize: 18,
-                          color: const Color(0xFF987554),
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'by ${book['author'] ?? 'Unknown Author'}',
-                            style: const TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 8),
-                          RatingBar.builder(
-                            initialRating: (book['rating'] ?? 0).toDouble(),
-                            minRating: 1,
-                            direction: Axis.horizontal,
-                            allowHalfRating: false,
-                            itemCount: 5,
-                            itemSize: 20,
-                            itemBuilder: (context, _) => const Icon(
-                              Icons.star,
-                              color: Color(0xFF987554),
-                            ),
-                            onRatingUpdate: (rating) {
-                              _updateRating(bookId, rating.toInt());
-                            },
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BookDetailPage(
-                                bookData: bookmarks[index],
-                                allBooks: bookmarks,
-                                searchType: 'category',
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                  },
-                ),
+              ),
+            ],
           ),
-        );
-      }
-    }
+        ),
+      ),
+    );
+  }
+}
