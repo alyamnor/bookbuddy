@@ -111,14 +111,10 @@ class _MyImagePickerState extends State<MyImagePicker> {
     logger.i("New image picked: ${_image!.path}");
 
     try {
-      // Initial OCR to detect text regions
+      // OCR1 - Text Regopn Detection
       final inputImage = InputImage.fromFilePath(_image!.path);
-      final textRecognizer = TextRecognizer(
-        script: TextRecognitionScript.latin,
-      );
-      final RecognizedText initialText = await textRecognizer.processImage(
-        inputImage,
-      );
+      final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+      final RecognizedText initialText = await textRecognizer.processImage(inputImage);
 
       // Preprocess image with text region data
       _processedImage = await _preprocessImage(_image!, initialText);
@@ -169,12 +165,10 @@ class _MyImagePickerState extends State<MyImagePicker> {
 
     final imageWidth =
         _image!.lengthSync() > 0
-            ? (img.decodeImage(_image!.readAsBytesSync())?.width ?? 1)
-            : 1;
+            ? (img.decodeImage(_image!.readAsBytesSync())?.width ?? 1): 1;
     final imageHeight =
         _image!.lengthSync() > 0
-            ? (img.decodeImage(_image!.readAsBytesSync())?.height ?? 1)
-            : 1;
+            ? (img.decodeImage(_image!.readAsBytesSync())?.height ?? 1): 1;
     final centerX = imageWidth / 2;
     final centerY = imageHeight / 2;
 

@@ -16,7 +16,6 @@ class AdminBookGridByCategory extends StatefulWidget {
 class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
   String searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, dynamic>> _allBooks = [];
 
   @override
   void initState() {
@@ -25,32 +24,10 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
     _fetchAllBooks();
   }
 
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fetchAllBooks() async {
-    try {
-      final snapshot = await FirebaseFirestore.instance.collection('book-database').get();
-      setState(() {
-        _allBooks = snapshot.docs.map((doc) => {...doc.data(), 'id': doc.id}).toList();
-      });
-    } catch (e) {
-      print('Error fetching all books: $e');
-    }
-  }
-
   void _onSearchChanged() {
-    final query = _searchController.text.trim();
-    if (query.isNotEmpty) {
-      setState(() => searchQuery = query);
-      _saveSearchQuery(query);
-    } else {
-      setState(() => searchQuery = '');
-    }
+    setState(() {
+      searchQuery = _searchController.text.trim();
+    });
   }
 
   Future<void> _saveSearchQuery(String query) async {
@@ -65,6 +42,27 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
       'query': query,
       'timestamp': FieldValue.serverTimestamp(),
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchAllBooks() async {
+    try {
+      final query = _searchController.text.trim();
+      if (query.isNotEmpty) {
+        setState(() => searchQuery = query);
+        _saveSearchQuery(query);
+      } else {
+        setState(() => searchQuery = '');
+      }
+    } catch (e) {
+      print('Error fetching books: $e');
+    }
   }
 
   Future<String> _determineSearchType(String query) async {
@@ -186,73 +184,79 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            "BookBuddy",
-            style: GoogleFonts.concertOne(
-              textStyle: const TextStyle(
-                fontSize: 30,
-                color: Color(0xFF987554),
-                fontWeight: FontWeight.bold,
+  Widget _buildCategorySection(String category, List<String> bookTitles) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('book-database').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        final books = snapshot.data!.docs.where((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          final title = (data['title'] ?? '').toString().toLowerCase();
+          final genre = (data['genre'] ?? '').toString().toLowerCase();
+          final author = (data['author'] ?? '').toString().toLowerCase();
+          final query = searchQuery.toLowerCase();
+
+          final matchesQuery =
+              query.isEmpty || title.contains(query) || genre.contains(query) || author.contains(query);
+          final matchesCategory =
+              genre == category.toLowerCase() || bookTitles.contains(data['title']);
+          return matchesQuery && matchesCategory;
+        }).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+              child: Text(
+                category.toUpperCase(),
+                style: GoogleFonts.concertOne(
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Color(0xFF987554),
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search by title, author, genre...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => searchQuery = '');
+            SizedBox(
+              height: 200,
+              child: books.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No results found in $category.',
+                        style: const TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: books.length,
+                      itemBuilder: (context, index) => BookCard(
+                        bookData: books[index].data() as Map<String, dynamic>,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AdminBookDetailPage(
+                                bookData: books[index].data() as Map<String, dynamic>,
+                                searchType: 'genre',
+                              ),
+                            ),
+                          );
                         },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.grey),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
-                ),
-              ),
+                      ),
+                    ),
             ),
-          ),
-          Expanded(
-            child: searchQuery.isEmpty
-                ? ListView(
-                    children: [
-                      _buildRecommendedSection(),
-                      _buildCategorySection('Romance', []),
-                      _buildCategorySection('Fantasy', []),
-                      _buildCategorySection('Self Help', []),
-                      _buildCategorySection('Slice of Life', []),
-                      _buildCategorySection('Horror', []),
-                    ],
-                  )
-                : _buildSearchResults(searchQuery),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addNewBook,
-        child: const Icon(Icons.add),
-        backgroundColor: const Color(0xFF987554),
-      ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(thickness: 1),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -461,82 +465,6 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
     );
   }
 
-  Widget _buildCategorySection(String category, List<String> bookTitles) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('book-database').snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox.shrink();
-        final books = snapshot.data!.docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          final title = (data['title'] ?? '').toString().toLowerCase();
-          final genre = (data['genre'] ?? '').toString().toLowerCase();
-          final author = (data['author'] ?? '').toString().toLowerCase();
-          final query = searchQuery.toLowerCase();
-
-          final matchesQuery =
-              query.isEmpty || title.contains(query) || genre.contains(query) || author.contains(query);
-          final matchesCategory =
-              genre == category.toLowerCase() || bookTitles.contains(data['title']);
-          return matchesQuery && matchesCategory;
-        }).toList();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              child: Text(
-                category.toUpperCase(),
-                style: GoogleFonts.concertOne(
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFF987554),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 200,
-              child: books.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No results found in $category.',
-                        style: const TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: books.length,
-                      itemBuilder: (context, index) => BookCard(
-                        bookData: books[index].data() as Map<String, dynamic>,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => AdminBookDetailPage(
-                                bookData: books[index].data() as Map<String, dynamic>,
-                                searchType: 'genre',
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(thickness: 1),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildSearchResults(String query) {
     return FutureBuilder<String>(
       future: _determineSearchType(query),
@@ -602,6 +530,76 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
           },
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Center(
+          child: Text(
+            "BookBuddy",
+            style: GoogleFonts.concertOne(
+              textStyle: const TextStyle(
+                fontSize: 30,
+                color: Color(0xFF987554),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by title, author, genre...',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => searchQuery = '');
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: searchQuery.isEmpty
+                ? ListView(
+                    children: [
+                      _buildRecommendedSection(),
+                      _buildCategorySection('Romance', []),
+                      _buildCategorySection('Fantasy', []),
+                      _buildCategorySection('Self Help', []),
+                      _buildCategorySection('Slice of Life', []),
+                      _buildCategorySection('Horror', []),
+                    ],
+                  )
+                : _buildSearchResults(searchQuery),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _addNewBook,
+        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF987554),
+      ),
     );
   }
 }
