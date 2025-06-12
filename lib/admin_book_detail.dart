@@ -217,63 +217,87 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
     final descriptionController = TextEditingController(text: widget.bookData['description'] ?? '');
 
     final result = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Edit Book Details', style: GoogleFonts.concertOne(fontSize: 18)),
-              const SizedBox(height: 10),
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Title', border: OutlineInputBorder()),
+    context: context,
+    isScrollControlled: true,
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 16,
+        right: 16,
+        top: 16,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Edit Book Details',
+              style: GoogleFonts.concertOne(
+                fontSize: 18,
+                color: Colors.brown[800], // Brown title
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: authorController,
-                decoration: const InputDecoration(labelText: 'Author', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: publisherController,
-                decoration: const InputDecoration(labelText: 'Publisher', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: authorController,
+              decoration: const InputDecoration(
+                labelText: 'Author',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: yearController,
-                decoration: const InputDecoration(labelText: 'Year Published', border: OutlineInputBorder()),
-                keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: publisherController,
+              decoration: const InputDecoration(
+                labelText: 'Publisher',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: genreController,
-                decoration: const InputDecoration(labelText: 'Genre', border: OutlineInputBorder()),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: yearController,
+              decoration: const InputDecoration(
+                labelText: 'Year Published',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(labelText: 'Description', border: OutlineInputBorder()),
-                maxLines: 4,
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: genreController,
+              decoration: const InputDecoration(
+                labelText: 'Genre',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Cancel'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Save'),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: descriptionController,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 4,
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Save'),
                   ),
                 ],
               ),
@@ -498,7 +522,9 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
         children: [
           Text(
             'Comments for ${widget.bookData['title']}',
-            style: GoogleFonts.concertOne(fontSize: 18),
+            style: GoogleFonts.concertOne(
+              textStyle: TextStyle(fontSize: 18, color: Colors.brown[800]),
+            ),
           ),
           const SizedBox(height: 10),
           TextField(
