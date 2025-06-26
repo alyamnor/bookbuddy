@@ -188,14 +188,6 @@ class _AdminManageUserPageState extends State<AdminManageUserPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF987554)),
-            onPressed: () {
-              // Add new user functionality can be added here if needed
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(

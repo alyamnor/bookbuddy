@@ -316,8 +316,8 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
               child: Text(
-                'RECOMMENDED FOR YOU',
-                style: GoogleFonts.concertOne(
+                'Recommended for You',
+                style: GoogleFonts.rubik(
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -393,8 +393,8 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
               child: Text(
-                category.toUpperCase(),
-                style: GoogleFonts.concertOne(
+                category,
+                style: GoogleFonts.rubik(
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -472,14 +472,29 @@ class _BookGridByCategoryState extends State<BookGridByCategory> {
                   author.contains(lowerQuery);
             }).toList();
 
-            if (books.isEmpty) {
-              return const Center(
-                child: Text(
-                  'No books found.',
-                  style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-                ),
-              );
-            }
+if (books.isEmpty) {
+  return Center(
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.book_outlined, // Book icon for "no books found"
+          size: 48, // Larger icon size for visibility
+          color: Colors.grey.shade400, // Light grey to match text
+        ),
+        const SizedBox(height: 16), // Spacing between icon and text
+        Text(
+          'Our shelves are quiet... want to try another search?',
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Colors.grey,
+            fontSize: 14, // Increased font size
+          ),
+        ),
+      ],
+    ),
+  );
+}
 
             return GridView.builder(
               padding: const EdgeInsets.all(16),

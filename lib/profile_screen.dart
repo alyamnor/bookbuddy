@@ -40,35 +40,31 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Center(child: Text('No user logged in'));
+      return const Scaffold(
+        body: Center(child: Text('No user logged in')),
+      );
     }
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.brown),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => Scaffold(
-                      body: BookGridByCategory(),
-                      bottomNavigationBar: MainNavigation(),
-                    ),
-              ),
-            );
-          },
+        title: Text(
+          "BookBuddy",
+          style: GoogleFonts.concertOne(
+            textStyle: const TextStyle(
+              fontSize: 30,
+              color: Color(0xFF987554),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
+        centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.transparent,
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future:
-            FirebaseFirestore.instance
-                .collection('user-database')
-                .doc(user.uid)
-                .get(),
+        future: FirebaseFirestore.instance
+            .collection('user-database')
+            .doc(user.uid)
+            .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -93,36 +89,30 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32), // Increased spacing from AppBar
                   CircleAvatar(
                     radius: 70,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage:
                         imageBytes != null ? MemoryImage(imageBytes) : null,
-                    child:
-                        imageBytes == null
-                            ? const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Colors.brown,
-                            )
-                            : null,
+                    child: imageBytes == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 60,
+                            color: Colors.brown,
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     preferredName,
-                    style: GoogleFonts.concertOne(
+                    style: GoogleFonts.rubik(
                       textStyle: const TextStyle(
-                        fontSize: 37,
+                        fontSize: 25,
                         color: Color(0xFF987554),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    email,
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -130,37 +120,49 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 30),
-                  _buildListTile(Icons.library_books, 'Bookshelf', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BookshelfPage(),
-                      ),
-                    );
-                  }),
-                  const Divider(height: 1),
-                  _buildListTile(Icons.bookmark, 'Bookmark', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const BookmarkPage(),
-                      ),
-                    );
-                  }),
-                  const Divider(height: 1),
-                  _buildListTile(Icons.settings, 'Account settings', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SettingsPage(),
-                      ),
-                    );
-                  }),
-                  const Divider(height: 1),
                   _buildListTile(
-                    Icons.logout,
-                    'Log out',
-                    _signOut,
+                    icon: Icons.library_books,
+                    title: 'Bookshelf',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BookshelfPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(height: 1, color: Colors.grey.shade300), // Lighter divider
+                  _buildListTile(
+                    icon: Icons.bookmark,
+                    title: 'Bookmark',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const BookmarkPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(height: 1, color: Colors.grey.shade300), // Lighter divider
+                  _buildListTile(
+                    icon: Icons.settings,
+                    title: 'Account settings',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SettingsPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(height: 1, color: Colors.grey.shade300), // Lighter divider
+                  _buildListTile(
+                    icon: Icons.logout,
+                    title: 'Log out',
+                    onTap: _signOut,
                     color: Colors.red,
                   ),
                 ],
@@ -172,17 +174,23 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListTile(
-    IconData icon,
-    String title,
-    VoidCallback onTap, {
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
     Color color = Colors.brown,
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(
         title,
-        style: TextStyle(color: color == Colors.red ? color : Colors.black),
+        style: GoogleFonts.rubik(
+          textStyle: TextStyle(
+            color: color == Colors.red ? color : Color(0xFF987554),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       onTap: onTap,
     );

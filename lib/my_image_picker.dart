@@ -553,8 +553,13 @@ class _MyImagePickerState extends State<MyImagePicker> {
                       )
                       : const Text(
                         "Tap below to scan or upload a book cover",
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(
+            fontStyle: FontStyle.italic,
+            color: Colors.grey,
+            fontSize: 14, // Increased font size
+          ),
                       ),
+                      
             ),
           ),
           Padding(
@@ -564,12 +569,12 @@ class _MyImagePickerState extends State<MyImagePicker> {
               children: [
                 _ActionButton(
                   icon: Icons.camera_alt,
-                  label: "SCAN",
+                  label: "Scan",
                   onTap: () => pickImage(ImageSource.camera),
                 ),
                 _ActionButton(
                   icon: Icons.photo_library,
-                  label: "UPLOAD",
+                  label: "Upload",
                   onTap: () => pickImage(ImageSource.gallery),
                 ),
               ],

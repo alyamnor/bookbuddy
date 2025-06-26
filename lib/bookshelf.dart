@@ -43,11 +43,12 @@ class _BookshelfPageState extends State<BookshelfPage> {
       return;
     }
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('user-database')
-          .doc(userId)
-          .collection('book-shelf')
-          .get();
+      final snapshot =
+          await FirebaseFirestore.instance
+              .collection('user-database')
+              .doc(userId)
+              .collection('book-shelf')
+              .get();
 
       setState(() {
         userBooks = snapshot.docs.map((doc) => doc.data()).toList();
@@ -66,74 +67,160 @@ class _BookshelfPageState extends State<BookshelfPage> {
     double rating = 0;
     _selectedDate = null;
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Text(
-            'Add Read Book',
-            style: GoogleFonts.concertOne(
-              fontSize: 24,
-              color: const Color(0xFF987554),
-            ),
-          ),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return SingleChildScrollView(
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(70),
+                    topRight: Radius.circular(70),
+                  ),
+                ),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      'Add What I’ve Read',
+                      style: GoogleFonts.rubik(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Title',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color(0xFF987554),
+                        ),
+                      ),
+                    ),
                     TextField(
                       controller: titleController,
                       decoration: InputDecoration(
-                        labelText: 'Title',
-                        labelStyle: GoogleFonts.concertOne(color: const Color(0xFF987554)),
+                        hintStyle: GoogleFonts.roboto(color: Colors.grey),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554)),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554), width: 2),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Author',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color(0xFF987554),
+                        ),
+                      ),
+                    ),
                     TextField(
                       controller: authorController,
                       decoration: InputDecoration(
-                        labelText: 'Author',
-                        labelStyle: GoogleFonts.concertOne(color: const Color(0xFF987554)),
+                        hintStyle: GoogleFonts.roboto(color: Colors.grey),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554)),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554), width: 2),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Review',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color(0xFF987554),
+                        ),
+                      ),
+                    ),
                     TextField(
                       controller: reviewController,
                       decoration: InputDecoration(
-                        labelText: 'Review',
-                        labelStyle: GoogleFonts.concertOne(color: const Color(0xFF987554)),
+                        hintStyle: GoogleFonts.roboto(color: Colors.grey),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554)),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554), width: 2),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                       maxLines: 3,
                     ),
                     const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color(0xFF987554),
+                        ),
+                      ),
+                    ),
                     GestureDetector(
                       onTap: () async {
                         final DateTime? picked = await showDatePicker(
@@ -162,8 +249,9 @@ class _BookshelfPageState extends State<BookshelfPage> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF987554)),
+                          border: Border.all(color: Colors.grey, width: 1),
                           borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -172,11 +260,14 @@ class _BookshelfPageState extends State<BookshelfPage> {
                               _selectedDate == null
                                   ? 'Select completion date'
                                   : DateFormat.yMMMd().format(_selectedDate!),
-                              style: GoogleFonts.concertOne(
+                              style: GoogleFonts.roboto(
                                 color: const Color(0xFF987554),
                               ),
                             ),
-                            const Icon(Icons.calendar_today, color: Color(0xFF987554)),
+                            const Icon(
+                              Icons.calendar_today,
+                              color: Color(0xFF987554),
+                            ),
                           ],
                         ),
                       ),
@@ -189,105 +280,144 @@ class _BookshelfPageState extends State<BookshelfPage> {
                       allowHalfRating: false,
                       itemCount: 5,
                       itemSize: 30,
-                      itemBuilder: (context, _) => const Icon(
-                        Icons.star,
-                        color: Color(0xFF987554),
-                      ),
+                      itemBuilder:
+                          (context, _) =>
+                              const Icon(Icons.star, color: Colors.yellow),
                       onRatingUpdate: (value) {
                         rating = value;
                       },
                     ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.rubik(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            if (titleController.text.isNotEmpty &&
+                                rating >= 1 &&
+                                _selectedDate != null) {
+                              final bookQuery =
+                                  await FirebaseFirestore.instance
+                                      .collection('book-database')
+                                      .get();
+                              Map<String, dynamic>? bestMatch;
+                              double highestSimilarity = 0.6;
+
+                              for (var doc in bookQuery.docs) {
+                                final title = doc.data()['title'] as String;
+                                final similarity = _stringSimilarity(
+                                  title,
+                                  titleController.text.trim(),
+                                );
+                                if (similarity > highestSimilarity) {
+                                  highestSimilarity = similarity;
+                                  bestMatch = doc.data();
+                                  bestMatch['bookId'] = doc.id;
+                                }
+                              }
+
+                              if (bestMatch == null) {
+                                Fluttertoast.showToast(
+                                  msg: 'Book not found in database',
+                                );
+                                return;
+                              }
+
+                              final bookId = bestMatch['bookId'];
+                              await FirebaseFirestore.instance
+                                  .collection('user-database')
+                                  .doc(userId)
+                                  .collection('book-shelf')
+                                  .doc(bookId)
+                                  .set({
+                                    'bookId': bookId,
+                                    'title': bestMatch['title'],
+                                    'author': authorController.text.trim(),
+                                    'cover-image-url':
+                                        bestMatch['cover-image-url'] ??
+                                        'https://via.placeholder.com/150',
+                                    'review': reviewController.text.trim(),
+                                    'genre': bestMatch['genre'] ?? '',
+                                    'rating': rating.toInt(),
+                                    'completionDate': Timestamp.fromDate(
+                                      _selectedDate!,
+                                    ),
+                                  });
+
+                              await FirebaseFirestore.instance
+                                  .collection('user-database')
+                                  .doc(userId)
+                                  .collection('ratings')
+                                  .doc(bookId)
+                                  .set({
+                                    'rating': rating.toInt(),
+                                    'timestamp': FieldValue.serverTimestamp(),
+                                  });
+
+                              _fetchBooks();
+                              Navigator.pop(context);
+                              Fluttertoast.showToast(
+                                msg: 'Book added to bookshelf',
+                              );
+                            } else {
+                              Fluttertoast.showToast(
+                                msg:
+                                    'Please provide title, rating, and completion date',
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF987554),
+                              border: Border.all(
+                                color: const Color(0xFF987554),
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Add',
+                              style: GoogleFonts.rubik(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                   ],
                 ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
               ),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (titleController.text.isNotEmpty && rating >= 1 && _selectedDate != null) {
-                  // Fuzzy search for book
-                  final bookQuery = await FirebaseFirestore.instance
-                      .collection('book-database')
-                      .get();
-                  Map<String, dynamic>? bestMatch;
-                  double highestSimilarity = 0.6; // Minimum similarity threshold
-
-                  for (var doc in bookQuery.docs) {
-                    final title = doc.data()['title'] as String;
-                    final similarity = _stringSimilarity(title, titleController.text.trim());
-                    if (similarity > highestSimilarity) {
-                      highestSimilarity = similarity;
-                      bestMatch = doc.data();
-                      bestMatch['bookId'] = doc.id;
-                    }
-                  }
-
-                  if (bestMatch == null) {
-                    Fluttertoast.showToast(msg: 'Book not found in database');
-                    return;
-                  }
-
-                  final bookId = bestMatch['bookId'];
-                  await FirebaseFirestore.instance
-                      .collection('user-database')
-                      .doc(userId)
-                      .collection('book-shelf')
-                      .doc(bookId)
-                      .set({
-                    'bookId': bookId,
-                    'title': bestMatch['title'],
-                    'author': authorController.text.trim(),
-                    'cover-image-url': bestMatch['cover-image-url'] ?? 'https://via.placeholder.com/150',
-                    'review': reviewController.text.trim(),
-                    'genre': bestMatch['genre'] ?? '',
-                    'rating': rating.toInt(),
-                    'completionDate': Timestamp.fromDate(_selectedDate!),
-                  });
-
-                  await FirebaseFirestore.instance
-                      .collection('user-database')
-                      .doc(userId)
-                      .collection('ratings')
-                      .doc(bookId)
-                      .set({
-                    'rating': rating.toInt(),
-                    'timestamp': FieldValue.serverTimestamp(),
-                  });
-
-                  if (reviewController.text.trim().isNotEmpty) {
-                    await FirebaseFirestore.instance
-                        .collection('book-database')
-                        .doc(bookId)
-                        .collection('book-comments')
-                        .doc('book-review')
-                        .collection('comments')
-                        .add({
-                      'userId': userId,
-                      'comment': reviewController.text.trim(),
-                      'timestamp': FieldValue.serverTimestamp(),
-                    });
-                  }
-                  _fetchBooks();
-                  Navigator.pop(context);
-                  Fluttertoast.showToast(msg: 'Book added to bookshelf');
-                } else {
-                  Fluttertoast.showToast(msg: 'Please provide title, rating, and completion date');
-                }
-              },
-              child: Text(
-                'Add',
-                style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-              ),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -296,108 +426,99 @@ class _BookshelfPageState extends State<BookshelfPage> {
   Future<void> _showBookDetails(Map<String, dynamic> book) async {
     final reviewController = TextEditingController(text: book['review']);
     double rating = book['rating'].toDouble();
-    _selectedDate = book['completionDate'] != null
-        ? (book['completionDate'] as Timestamp).toDate()
-        : null;
+    _selectedDate =
+        book['completionDate'] != null
+            ? (book['completionDate'] as Timestamp).toDate()
+            : null;
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Stack(
-            children: [
-              Center(
-                child: Text(
-                  book['title'],
-                  style: GoogleFonts.concertOne(
-                    fontSize: 24,
-                    color: const Color(0xFF987554),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SingleChildScrollView(
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(70),
+                    topRight: Radius.circular(70),
                   ),
                 ),
-              ),
-              Positioned(
-                right: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.delete, color: Color(0xFF987554)),
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text(
-                          'Confirm Delete',
-                          style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-                        ),
-                        content: Text(
-                          'Are you sure you want to remove this book from your bookshelf?',
-                          style: GoogleFonts.concertOne(color: Colors.black87),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: Text(
-                              'Cancel',
-                              style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: Text(
-                              'Delete',
-                              style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirm == true) {
-                      await FirebaseFirestore.instance
-                          .collection('user-database')
-                          .doc(userId)
-                          .collection('book-shelf')
-                          .doc(book['bookId'])
-                          .delete();
-                      _fetchBooks();
-                      Navigator.pop(context);
-                      Fluttertoast.showToast(msg: 'Book removed from bookshelf');
-                    }
-                  },
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                  left: 16,
+                  right: 16,
+                  top: 16,
                 ),
-              ),
-            ],
-          ),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CachedNetworkImage(
-                      imageUrl: book['cover-image-url'],
-                      height: 150,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
+                    Text(
+                      book['title'],
+                      style: GoogleFonts.rubik(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Review',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color(0xFF987554),
+                        ),
+                      ),
+                    ),
                     TextField(
                       controller: reviewController,
                       decoration: InputDecoration(
-                        labelText: 'Review',
-                        labelStyle: GoogleFonts.concertOne(color: const Color(0xFF987554)),
+                        hintStyle: GoogleFonts.roboto(color: Colors.grey),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554)),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: const Color(0xFF987554), width: 2),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                       maxLines: 3,
                     ),
                     const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '',
+                        style: GoogleFonts.roboto(
+                          fontSize: 14,
+                          color: const Color(0xFF987554),
+                        ),
+                      ),
+                    ),
                     GestureDetector(
                       onTap: () async {
                         final DateTime? picked = await showDatePicker(
@@ -426,8 +547,9 @@ class _BookshelfPageState extends State<BookshelfPage> {
                       child: Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFF987554)),
+                          border: Border.all(color: Colors.grey, width: 1),
                           borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -436,11 +558,14 @@ class _BookshelfPageState extends State<BookshelfPage> {
                               _selectedDate == null
                                   ? 'Select completion date'
                                   : DateFormat.yMMMd().format(_selectedDate!),
-                              style: GoogleFonts.concertOne(
+                              style: GoogleFonts.roboto(
                                 color: const Color(0xFF987554),
                               ),
                             ),
-                            const Icon(Icons.calendar_today, color: Color(0xFF987554)),
+                            const Icon(
+                              Icons.calendar_today,
+                              color: Color(0xFF987554),
+                            ),
                           ],
                         ),
                       ),
@@ -453,74 +578,166 @@ class _BookshelfPageState extends State<BookshelfPage> {
                       allowHalfRating: false,
                       itemCount: 5,
                       itemSize: 30,
-                      itemBuilder: (context, _) => const Icon(
-                        Icons.star,
-                        color: Color(0xFF987554),
-                      ),
+                      itemBuilder:
+                          (context, _) =>
+                              const Icon(Icons.star, color: Colors.yellow),
                       onRatingUpdate: (value) {
                         rating = value;
                       },
                     ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        TextButton(
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder:
+                                  (context) => AlertDialog(
+                                    backgroundColor: Colors.white,
+                                    title: Text(
+                                      'Delete Book',
+                                      style: GoogleFonts.rubik(
+                                        color: const Color(0xFF987554),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      'Are you sure you want to remove this book from your bookshelf?',
+                                      style: GoogleFonts.roboto(
+                                        color: Colors.black87,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pop(context, false),
+                                        child: Text(
+                                          'Cancel',
+                                          style: GoogleFonts.rubik(
+                                            color: Colors.grey,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed:
+                                            () => Navigator.pop(context, true),
+                                        child: Text(
+                                          'Delete',
+                                          style: GoogleFonts.rubik(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            );
+
+                            if (confirm == true) {
+                              await FirebaseFirestore.instance
+                                  .collection('user-database')
+                                  .doc(userId)
+                                  .collection('book-shelf')
+                                  .doc(book['bookId'])
+                                  .delete();
+                              await FirebaseFirestore.instance
+                                  .collection('user-database')
+                                  .doc(userId)
+                                  .collection('ratings')
+                                  .doc(book['bookId'])
+                                  .delete();
+                              _fetchBooks();
+                              Navigator.pop(context);
+                              Fluttertoast.showToast(
+                                msg: 'Book removed from bookshelf',
+                              );
+                            }
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.grey, width: 1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Delete',
+                              style: GoogleFonts.rubik(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('user-database')
+                                .doc(userId)
+                                .collection('book-shelf')
+                                .doc(book['bookId'])
+                                .update({
+                                  'review': reviewController.text.trim(),
+                                  'rating': rating.toInt(),
+                                  'completionDate':
+                                      _selectedDate != null
+                                          ? Timestamp.fromDate(_selectedDate!)
+                                          : null,
+                                });
+
+                            await FirebaseFirestore.instance
+                                .collection('user-database')
+                                .doc(userId)
+                                .collection('ratings')
+                                .doc(book['bookId'])
+                                .set({
+                                  'rating': rating.toInt(),
+                                  'timestamp': FieldValue.serverTimestamp(),
+                                });
+
+                            _fetchBooks();
+                            Navigator.pop(context);
+                            Fluttertoast.showToast(msg: 'Book updated');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF987554),
+                              border: Border.all(
+                                color: const Color(0xFF987554),
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'Edit',
+                              style: GoogleFonts.rubik(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                   ],
                 ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
               ),
-            ),
-            TextButton(
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('user-database')
-                    .doc(userId)
-                    .collection('book-shelf')
-                    .doc(book['bookId'])
-                    .update({
-                  'review': reviewController.text.trim(),
-                  'rating': rating.toInt(),
-                  'completionDate': _selectedDate != null ? Timestamp.fromDate(_selectedDate!) : null,
-                });
-
-                if (reviewController.text.trim().isNotEmpty) {
-                  await FirebaseFirestore.instance
-                      .collection('book-database')
-                      .doc(book['bookId'])
-                      .collection('book-comments')
-                      .doc('book-review')
-                      .collection('comments')
-                      .add({
-                    'userId': userId,
-                    'comment': reviewController.text.trim(),
-                    'timestamp': FieldValue.serverTimestamp(),
-                  });
-                }
-
-                await FirebaseFirestore.instance
-                    .collection('user-database')
-                    .doc(userId)
-                    .collection('ratings')
-                    .doc(book['bookId'])
-                    .set({
-                  'rating': rating.toInt(),
-                  'timestamp': FieldValue.serverTimestamp(),
-                });
-
-                _fetchBooks();
-                Navigator.pop(context);
-                Fluttertoast.showToast(msg: 'Book updated');
-              },
-              child: Text(
-                'Save',
-                style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-              ),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -533,7 +750,11 @@ class _BookshelfPageState extends State<BookshelfPage> {
         backgroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF987554)),
+            icon: const Icon(
+              Icons.add_box_rounded,
+              color: Color(0xFF987554),
+              size: 30,
+            ),
             onPressed: _addBook,
           ),
         ],
@@ -544,54 +765,131 @@ class _BookshelfPageState extends State<BookshelfPage> {
           children: [
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'My Bookshelf',
-                style: GoogleFonts.concertOne(
-                  fontSize: 32,
-                  color: const Color(0xFF987554),
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'My Bookshelf',
+                    style: GoogleFonts.rubik(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
-              child: userBooks.isEmpty
-                  ? const Center(child: Text('No books on your bookshelf yet'))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.7,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: userBooks.length,
-                      itemBuilder: (context, index) {
-                        final book = userBooks[index];
-                        return GestureDetector(
-                          onTap: () => _showBookDetails(book),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  spreadRadius: 2,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: book['cover-image-url'] ?? 'https://via.placeholder.com/150',
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) => const Icon(Icons.broken_image),
+              child:
+                  userBooks.isEmpty
+                      ? const Center(
+                        child: Text(
+                          'No books on your bookshelf yet',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: userBooks.length,
+                        itemBuilder: (context, index) {
+                          final book = userBooks[index];
+                          return GestureDetector(
+                            onTap: () => _showBookDetails(book),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    width: 100,
+                                    height: 150,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.withOpacity(0.3),
+                                          spreadRadius: 2,
+                                          blurRadius: 5,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: CachedNetworkImage(
+                                        imageUrl:
+                                            book['cover-image-url'] ??
+                                            'https://via.placeholder.com/150',
+                                        fit: BoxFit.cover,
+                                        errorWidget:
+                                            (context, url, error) =>
+                                                const Icon(Icons.broken_image),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          book['title'],
+                                          style: GoogleFonts.rubik(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          book['review'] ?? 'No review',
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          book['completionDate'] != null
+                                              ? DateFormat.yMMMd().format(
+                                                (book['completionDate']
+                                                        as Timestamp)
+                                                    .toDate(),
+                                              )
+                                              : 'No date',
+                                          style: GoogleFonts.roboto(
+                                            fontSize: 14,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        RatingBarIndicator(
+                                          rating: book['rating'].toDouble(),
+                                          itemBuilder:
+                                              (context, _) => const Icon(
+                                                Icons.star,
+                                                color: Colors.yellow,
+                                              ),
+                                          itemCount: 5,
+                                          itemSize: 20,
+                                          direction: Axis.horizontal,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
             ),
           ],
         ),

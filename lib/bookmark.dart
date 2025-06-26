@@ -51,31 +51,33 @@ class _BookmarkPageState extends State<BookmarkPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
         title: Text(
           'Remove Bookmark',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.roboto(
             fontSize: 24,
             color: const Color(0xFF987554),
           ),
         ),
         content: Text(
           'Are you sure you want to remove "$title" from your bookmarks?',
-          style: GoogleFonts.poppins(color: Colors.black87),
+          style: GoogleFonts.roboto(color: Colors.black87),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Cancel',
-              style: GoogleFonts.poppins(color: const Color(0xFF987554)),
+              style: GoogleFonts.roboto(color: const Color(0xFF987554)),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Remove',
-              style: GoogleFonts.poppins(color: const Color(0xFFFF0000)),
+              style: GoogleFonts.roboto(color: const Color(0xFFFF0000)),
             ),
           ),
         ],
@@ -115,11 +117,9 @@ class _BookmarkPageState extends State<BookmarkPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-      ),
+      appBar: AppBar(backgroundColor: Colors.white),
       body: Container(
-        color: const Color(0xFFF5F5F0),
+        color: const Color(0xFFFFFFFF),
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,8 +128,8 @@ class _BookmarkPageState extends State<BookmarkPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   'My Bookmark',
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
+                  style: GoogleFonts.rubik(
+                    fontSize: 30,
                     color: const Color(0xFF987554),
                     fontWeight: FontWeight.bold,
                   ),
@@ -137,12 +137,21 @@ class _BookmarkPageState extends State<BookmarkPage> {
               ),
               Expanded(
                 child: bookmarks.isEmpty
-                    ? const Center(child: Text('No bookmarks yet'))
+                    ? const Center(
+                        child: Text(
+                          'No bookmarks yet',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
                     : GridView.builder(
                         padding: const EdgeInsets.all(8.0),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.65,
+                          childAspectRatio: 0.75, // Increased to make boxes smaller
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                         ),
@@ -168,46 +177,64 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                   ),
                                 );
                               } else {
-                                Fluttertoast.showToast(msg: 'Failed to load book details');
+                                Fluttertoast.showToast(
+                                  msg: 'Failed to load book details',
+                                );
                               }
                             },
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                border: Border.all(color: Colors.grey, width: 1.0),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1.0,
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
+                                mainAxisSize: MainAxisSize.min, // Tighten the column
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(10),
+                                    ),
                                     child: CachedNetworkImage(
-                                      imageUrl: book['cover-image-url'] ?? 'https://via.placeholder.com/150',
+                                      imageUrl: book['cover-image-url'] ??
+                                          'https://via.placeholder.com/150',
                                       fit: BoxFit.cover,
-                                      height: 120,
+                                      height: 100, // Reduced height for smaller box
                                       width: double.infinity,
-                                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                                      placeholder: (context, url) => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
                                       errorWidget: (context, url, error) {
-                                        _logger.e('Failed to load bookmark image', error: error);
-                                        return const Icon(Icons.broken_image, size: 50);
+                                        _logger.e(
+                                          'Failed to load bookmark image',
+                                          error: error,
+                                        );
+                                        return const Icon(
+                                          Icons.broken_image,
+                                          size: 50,
+                                        );
                                       },
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0), // Reduced padding
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           child: Column(
+                                            mainAxisSize: MainAxisSize.min, // Tighten the text column
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 book['title'] ?? 'Unknown Title',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 16,
+                                                style: GoogleFonts.rubik(
+                                                  fontSize: 14, // Slightly smaller font
                                                   color: const Color(0xFF000000),
                                                   fontWeight: FontWeight.bold,
                                                 ),
@@ -216,18 +243,9 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                               ),
                                               Text(
                                                 'by ${book['author'] ?? 'Unknown Author'}',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 14,
+                                                style: GoogleFonts.roboto(
+                                                  fontSize: 12, // Slightly smaller font
                                                   color: Colors.black54,
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                              Text(
-                                                book['store'] ?? 'Unknown Store',
-                                                style: GoogleFonts.poppins(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -239,8 +257,14 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                           icon: const Icon(
                                             Icons.bookmark,
                                             color: Color(0xFFFF0000),
+                                            size: 30, // Smaller icon
                                           ),
-                                          onPressed: () => _removeBookmark(bookId, book['title'] ?? 'Unknown Title'),
+                                          onPressed: () => _removeBookmark(
+                                            bookId,
+                                            book['title'] ?? 'Unknown Title',
+                                          ),
+                                          padding: EdgeInsets.zero, // Remove extra padding
+                                          constraints: const BoxConstraints(), // Remove default constraints
                                         ),
                                       ],
                                     ),

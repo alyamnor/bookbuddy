@@ -413,17 +413,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
                 ),
               ),
               const SizedBox(height: 10),
-              Center(
-                child: TextButton(
-                  onPressed: widget.processedImage != null
-                      ? () => setState(() => _showProcessedImage = !_showProcessedImage)
-                      : null,
-                  child: Text(
-                    _showProcessedImage ? 'Show Original Image' : 'Show Processed Image',
-                    style: const TextStyle(color: Colors.blue),
-                  ),
-                ),
-              ),
               const SizedBox(height: 10),
               Center(
                 child: Text(
