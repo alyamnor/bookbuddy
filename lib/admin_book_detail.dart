@@ -27,7 +27,6 @@ class AdminBookDetailPage extends StatefulWidget {
 class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
   final Logger _logger = Logger(printer: PrettyPrinter());
   bool _showProcessedImage = false;
-  final TextEditingController _commentController = TextEditingController();
   List<Map<String, dynamic>> _comments = [];
   double _userRating = 0;
   String? _bookId;
@@ -64,16 +63,42 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Deletion'),
-        content: Text('Are you sure you want to delete "${widget.bookData['title']}" from the database?'),
+        backgroundColor: Colors.white,
+        title: Text(
+          'Confirm Deletion',
+          style: GoogleFonts.rubik(
+            color: const Color(0xFF987554),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete ${widget.bookData['title']} from the database?',
+          style: GoogleFonts.roboto(
+            color: Colors.black87,
+            fontSize: 14,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.rubik(
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.rubik(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -108,44 +133,46 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
     });
   }
 
-  Future<void> _addComment() async {
-    if (userId == null || _commentController.text.trim().isEmpty || _bookId == null) return;
-    try {
-      await FirebaseFirestore.instance
-          .collection('book-database')
-          .doc(_bookId)
-          .collection('book-comments')
-          .doc('book-review')
-          .collection('comments')
-          .add({
-        'userId': userId,
-        'comment': _commentController.text.trim(),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      _logger.i('Comment added for ${widget.bookData['title']}');
-      _commentController.clear();
-      await _fetchComments();
-      Fluttertoast.showToast(msg: 'Comment added');
-    } catch (e) {
-      _logger.e('Comment error', error: e);
-      Fluttertoast.showToast(msg: 'Failed to add comment');
-    }
-  }
-
   Future<void> _deleteComment(String commentId) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Confirm Deletion'),
-        content: const Text('Are you sure you want to delete this comment?'),
+        backgroundColor: Colors.white,
+        title: Text(
+          'Confirm Deletion',
+          style: GoogleFonts.rubik(
+            color: const Color(0xFF987554),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete this comment?',
+          style: GoogleFonts.roboto(
+            color: Colors.black87,
+            fontSize: 14,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.rubik(
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.rubik(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -217,90 +244,254 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
     final descriptionController = TextEditingController(text: widget.bookData['description'] ?? '');
 
     final result = await showModalBottomSheet<bool>(
-    context: context,
-    isScrollControlled: true,
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Edit Book Details',
-              style: GoogleFonts.concertOne(
-                fontSize: 18,
-                color: Colors.brown[800], // Brown title
-              ),
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (context) => SingleChildScrollView(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(70),
+              topRight: Radius.circular(70),
             ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: authorController,
-              decoration: const InputDecoration(
-                labelText: 'Author',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: publisherController,
-              decoration: const InputDecoration(
-                labelText: 'Publisher',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: yearController,
-              decoration: const InputDecoration(
-                labelText: 'Year Published',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: genreController,
-              decoration: const InputDecoration(
-                labelText: 'Genre',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 4,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
                 ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Save'),
+              ),
+              const SizedBox(height: 15),
+              Text(
+                'Edit Book Details',
+                style: GoogleFonts.rubik(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF987554),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Title',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Author',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: authorController,
+                decoration: InputDecoration(
+                  hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Publisher',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: publisherController,
+                decoration: InputDecoration(
+                  hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Year Published',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: yearController,
+                decoration: InputDecoration(
+                  hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Genre',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: genreController,
+                decoration: InputDecoration(
+                  hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Description',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: descriptionController,
+                decoration: InputDecoration(
+                  hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                ),
+                maxLines: 4,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: GoogleFonts.rubik(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF987554),
+                        border: Border.all(color: const Color(0xFF987554)),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'Save',
+                        style: GoogleFonts.rubik(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 10),
             ],
           ),
         ),
@@ -321,7 +512,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
       });
       _logger.i('Book updated: ${titleController.text}');
       Fluttertoast.showToast(msg: 'Book updated successfully');
-      // Update local bookData to reflect changes
       setState(() {
         widget.bookData['title'] = titleController.text.trim();
         widget.bookData['author'] = authorController.text.trim();
@@ -366,6 +556,9 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                barrierColor: Colors.black54,
+                elevation: 0,
                 builder: (_) => _buildCommentSheet(),
               );
             },
@@ -412,7 +605,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
               const SizedBox(height: 10),
               Center(
                 child: Text(
@@ -499,53 +691,85 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
   }
 
   Widget _buildCommentSheet() {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(70),
+          topRight: Radius.circular(70),
+        ),
+      ),
+      padding: const EdgeInsets.only(
         left: 16,
         right: 16,
         top: 16,
+        bottom: 16,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Container(
+            width: 40,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(height: 15),
           Text(
-            'Comments for ${widget.bookData['title']}',
-            style: GoogleFonts.concertOne(
-              textStyle: TextStyle(fontSize: 18, color: Colors.brown[800]),
+            'Community Reviews',
+            style: GoogleFonts.rubik(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF987554),
             ),
           ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: _commentController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Add a comment',
-            ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: _addComment,
-            child: const Text('Post Comment'),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           SizedBox(
             height: 200,
-            child: ListView.builder(
-              itemCount: _comments.length,
-              itemBuilder: (context, index) {
-                final comment = _comments[index];
-                return ListTile(
-                  title: Text(comment['comment']),
-                  subtitle: Text('By User ${comment['userId'].substring(0, 6)}...'),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteComment(comment['id']),
+            child: _comments.isEmpty
+                ? const Center(
+                    child: Text(
+                      'No comments yet.',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: _comments.length,
+                    separatorBuilder: (context, index) => Divider(color: Colors.grey.shade300),
+                    itemBuilder: (context, index) {
+                      final comment = _comments[index];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                comment['preferredName'] ?? 'Anonymous',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteComment(comment['id']),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(comment['comment']),
+                        ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
+          const SizedBox(height: 10),
         ],
       ),
     );
