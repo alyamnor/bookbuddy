@@ -6,7 +6,6 @@ import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'book_event.dart';
-// Make sure BookEventPage is defined in book_event.dart and exported properly.
 
 class AdminManageEventPage extends StatefulWidget {
   const AdminManageEventPage({super.key});
@@ -57,141 +56,288 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
     final venueController = TextEditingController();
     final bannerController = TextEditingController();
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Text(
-            'Add Event',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              color: const Color(0xFF987554),
+        return SingleChildScrollView(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(70),
+                topRight: Radius.circular(70),
+              ),
             ),
-          ),
-          content: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              left: 16,
+              right: 16,
+              top: 16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Event Name',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
-                      borderRadius: BorderRadius.circular(10),
+                Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  'Add Event',
+                  style: GoogleFonts.rubik(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Name',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
                 TextField(
-                  controller: descriptionController,
+                  controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'Event Description',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Description',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
+                TextField(
+                  controller: descriptionController,
+                  decoration: InputDecoration(
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                   maxLines: 3,
                 ),
                 const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Date (YYYY-MM-DD)',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
                 TextField(
                   controller: dateController,
                   decoration: InputDecoration(
-                    labelText: 'Event Date (YYYY-MM-DD)',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Venue',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
                 TextField(
                   controller: venueController,
                   decoration: InputDecoration(
-                    labelText: 'Event Venue',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: bannerController,
-                  decoration: InputDecoration(
-                    labelText: 'Event Banner URL',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
-                      borderRadius: BorderRadius.circular(10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Banner URL',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
                     ),
                   ),
                 ),
+                TextField(
+                  controller: bannerController,
+                  decoration: InputDecoration(
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.rubik(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        if (nameController.text.isNotEmpty && bannerController.text.isNotEmpty) {
+                          try {
+                            await FirebaseFirestore.instance.collection('event-database').add({
+                              'event-name': nameController.text.trim(),
+                              'event-description': descriptionController.text.trim(),
+                              'event-date': dateController.text.trim(),
+                              'event-venue': venueController.text.trim(),
+                              'event-banner': bannerController.text.trim(),
+                            });
+                            _fetchEvents();
+                            Navigator.pop(context);
+                            Fluttertoast.showToast(msg: 'Event added successfully');
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: 'Failed to add event');
+                          }
+                        } else {
+                          Fluttertoast.showToast(msg: 'Please provide event name and banner URL');
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF987554),
+                          border: Border.all(
+                            color: const Color(0xFF987554),
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Add',
+                          style: GoogleFonts.rubik(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.poppins(color: const Color(0xFF987554)),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (nameController.text.isNotEmpty && bannerController.text.isNotEmpty) {
-                  try {
-                    await FirebaseFirestore.instance.collection('event-database').add({
-                      'event-name': nameController.text.trim(),
-                      'event-description': descriptionController.text.trim(),
-                      'event-date': dateController.text.trim(),
-                      'event-venue': venueController.text.trim(),
-                      'event-banner': bannerController.text.trim(),
-                    });
-                    _fetchEvents();
-                    Navigator.pop(context);
-                    Fluttertoast.showToast(msg: 'Event added successfully');
-                  } catch (e) {
-                    Fluttertoast.showToast(msg: 'Failed to add event');
-                  }
-                } else {
-                  Fluttertoast.showToast(msg: 'Please provide event name and banner URL');
-                }
-              },
-              child: Text(
-                'Add',
-                style: GoogleFonts.poppins(color: const Color(0xFF987554)),
-              ),
-            ),
-          ],
         );
       },
     );
@@ -204,144 +350,291 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
     final venueController = TextEditingController(text: event['event-venue']);
     final bannerController = TextEditingController(text: event['event-banner']);
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Text(
-            'Edit Event',
-            style: GoogleFonts.poppins(
-              fontSize: 24,
-              color: const Color(0xFF987554),
+        return SingleChildScrollView(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(70),
+                topRight: Radius.circular(70),
+              ),
             ),
-          ),
-          content: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              left: 16,
+              right: 16,
+              top: 16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Event Name',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
-                      borderRadius: BorderRadius.circular(10),
+                Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  'Edit Event',
+                  style: GoogleFonts.rubik(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Name',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
                 TextField(
-                  controller: descriptionController,
+                  controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'Event Description',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Description',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
+                TextField(
+                  controller: descriptionController,
+                  decoration: InputDecoration(
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                   maxLines: 3,
                 ),
                 const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Date (YYYY-MM-DD)',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
                 TextField(
                   controller: dateController,
                   decoration: InputDecoration(
-                    labelText: 'Event Date (YYYY-MM-DD)',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Venue',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
                 TextField(
                   controller: venueController,
                   decoration: InputDecoration(
-                    labelText: 'Event Venue',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: bannerController,
-                  decoration: InputDecoration(
-                    labelText: 'Event Banner URL',
-                    labelStyle: GoogleFonts.poppins(color: const Color(0xFF987554)),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
-                      borderRadius: BorderRadius.circular(10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Event Banner URL',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
                     ),
                   ),
                 ),
+                TextField(
+                  controller: bannerController,
+                  decoration: InputDecoration(
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(
+                        color: Colors.grey,
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.rubik(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        if (nameController.text.isNotEmpty && bannerController.text.isNotEmpty) {
+                          try {
+                            await FirebaseFirestore.instance
+                                .collection('event-database')
+                                .doc(event['eventId'])
+                                .update({
+                              'event-name': nameController.text.trim(),
+                              'event-description': descriptionController.text.trim(),
+                              'event-date': dateController.text.trim(),
+                              'event-venue': venueController.text.trim(),
+                              'event-banner': bannerController.text.trim(),
+                            });
+                            _fetchEvents();
+                            Navigator.pop(context);
+                            Fluttertoast.showToast(msg: 'Event updated successfully');
+                          } catch (e) {
+                            Fluttertoast.showToast(msg: 'Failed to update event');
+                          }
+                        } else {
+                          Fluttertoast.showToast(msg: 'Please provide event name and banner URL');
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF987554),
+                          border: Border.all(
+                            color: const Color(0xFF987554),
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Save',
+                          style: GoogleFonts.rubik(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.poppins(color: const Color(0xFF987554)),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (nameController.text.isNotEmpty && bannerController.text.isNotEmpty) {
-                  try {
-                    await FirebaseFirestore.instance
-                        .collection('event-database')
-                        .doc(event['eventId'])
-                        .update({
-                      'event-name': nameController.text.trim(),
-                      'event-description': descriptionController.text.trim(),
-                      'event-date': dateController.text.trim(),
-                      'event-venue': venueController.text.trim(),
-                      'event-banner': bannerController.text.trim(),
-                    });
-                    _fetchEvents();
-                    Navigator.pop(context);
-                    Fluttertoast.showToast(msg: 'Event updated successfully');
-                  } catch (e) {
-                    Fluttertoast.showToast(msg: 'Failed to update event');
-                  }
-                } else {
-                  Fluttertoast.showToast(msg: 'Please provide event name and banner URL');
-                }
-              },
-              child: Text(
-                'Save',
-                style: GoogleFonts.poppins(color: const Color(0xFF987554)),
-              ),
-            ),
-          ],
         );
       },
     );
@@ -355,28 +648,35 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: Text(
           'Remove Event',
-          style: GoogleFonts.poppins(
-            fontSize: 24,
+          style: GoogleFonts.rubik(
+            fontSize: 16,
             color: const Color(0xFF987554),
+            fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
-          'Are you sure you want to remove "$eventName" from events?',
-          style: GoogleFonts.poppins(color: Colors.black87),
+          'Are you sure you want to remove $eventName from events?',
+          style: GoogleFonts.roboto(color: Colors.black87, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Cancel',
-              style: GoogleFonts.poppins(color: const Color(0xFF987554)),
+              style: GoogleFonts.rubik(
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Remove',
-              style: GoogleFonts.poppins(color: const Color(0xFFFF0000)),
+              style: GoogleFonts.rubik(
+                color: const Color(0xFFFF0000),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -405,13 +705,16 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
         backgroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF987554)),
-            onPressed: _addEvent,
+icon: const Icon(
+              Icons.add_box_rounded,
+              color: Color(0xFF987554),
+              size: 30,
+            ),            onPressed: _addEvent,
           ),
         ],
       ),
       body: Container(
-        color: const Color(0xFFF5F5F0),
+        color: const Color(0xFFFFFFFF),
         child: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -420,8 +723,8 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   'Manage Events',
-                  style: GoogleFonts.poppins(
-                    fontSize: 32,
+                  style: GoogleFonts.rubik(
+                    fontSize: 30,
                     color: const Color(0xFF987554),
                     fontWeight: FontWeight.bold,
                   ),
@@ -429,12 +732,21 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
               ),
               Expanded(
                 child: events.isEmpty
-                    ? const Center(child: Text('No events yet'))
+                    ? const Center(
+                        child: Text(
+                          'No events yet',
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
                     : GridView.builder(
                         padding: const EdgeInsets.all(8.0),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.65,
+                          childAspectRatio: 0.75,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                         ),
@@ -455,18 +767,24 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                border: Border.all(color: Colors.grey, width: 1.0),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1.0,
+                                ),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
-                                    borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(10),
+                                    ),
                                     child: CachedNetworkImage(
                                       imageUrl: event['event-banner'] ?? 'https://via.placeholder.com/150',
                                       fit: BoxFit.cover,
-                                      height: 120,
+                                      height: 100,
                                       width: double.infinity,
                                       placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
                                       errorWidget: (context, url, error) {
@@ -476,25 +794,56 @@ class _AdminManageEventPageState extends State<AdminManageEventPage> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                    padding: const EdgeInsets.fromLTRB(8.0, 2.0, 8.0, 2.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
-                                          child: IconButton(
-                                            icon: const Icon(
-                                              Icons.edit,
-                                              color: Color(0xFF987554),
-                                            ),
-                                            onPressed: () => _editEvent(event),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                event['event-name'] ?? 'Unknown Event',
+                                                style: GoogleFonts.rubik(
+                                                  fontSize: 16,
+                                                  color: const Color(0xFF000000),
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                        IconButton(
-                                          icon: const Icon(
-                                            Icons.delete,
-                                            color: Color(0xFFFF0000),
-                                          ),
-                                          onPressed: () => _deleteEvent(event['eventId'], event['event-name'] ?? 'Unknown Event'),
+                                        Row(
+                                          children: [
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.edit,
+                                                color: Color(0xFF987554),
+                                                size: 30,
+                                              ),
+                                              onPressed: () => _editEvent(event),
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Color(0xFFFF0000),
+                                                size: 30,
+                                              ),
+                                              onPressed: () => _deleteEvent(
+                                                event['eventId'],
+                                                event['event-name'] ?? 'Unknown Event',
+                                              ),
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
