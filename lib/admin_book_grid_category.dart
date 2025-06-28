@@ -472,8 +472,8 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
               child: Text(
-                category.toUpperCase(),
-                style: GoogleFonts.concertOne(
+                category,
+                style: GoogleFonts.rubik(
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

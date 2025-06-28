@@ -27,16 +27,20 @@ class _AdminManageUserPageState extends State<AdminManageUserPage> {
       return;
     }
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('user-database')
-          .get();
+      final snapshot =
+          await FirebaseFirestore.instance.collection('user-database').get();
 
       setState(() {
-        allUsers = snapshot.docs.map((doc) => {
-          'uid': doc.id,
-          'preferredName': doc.data()['preferredName'] ?? '',
-          'email': doc.data()['email'] ?? '',
-        }).toList();
+        allUsers = snapshot.docs
+            .where((doc) => doc.id != userId) // Exclude current user
+            .map(
+              (doc) => {
+                'uid': doc.id,
+                'preferredName': doc.data()['preferredName'] ?? '',
+                'email': doc.data()['email'] ?? '',
+              },
+            )
+            .toList();
       });
     } catch (e) {
       Fluttertoast.showToast(msg: 'Failed to load users');
@@ -47,148 +51,191 @@ class _AdminManageUserPageState extends State<AdminManageUserPage> {
     final nameController = TextEditingController(text: user['preferredName']);
     final emailController = TextEditingController(text: user['email']);
 
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Text(
-            'Edit User',
-            style: GoogleFonts.concertOne(
-              fontSize: 24,
-              color: const Color(0xFF987554),
+        return SingleChildScrollView(
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(70),
+                topRight: Radius.circular(70),
+              ),
             ),
-          ),
-          content: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+              left: 16,
+              right: 16,
+              top: 16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  'Edit User',
+                  style: GoogleFonts.rubik(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Preferred Name',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                ),
                 TextField(
                   controller: nameController,
                   decoration: InputDecoration(
-                    labelText: 'Preferred Name',
-                    labelStyle: GoogleFonts.concertOne(color: const Color(0xFF987554)),
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
                     enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
+                      borderSide: const BorderSide(color: Colors.grey),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                      borderSide: const BorderSide(color: Colors.grey),
                       borderRadius: BorderRadius.circular(10),
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554)),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
-                      borderRadius: BorderRadius.circular(10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Email',
+                    style: GoogleFonts.rubik(
+                      fontSize: 14,
+                      color: const Color(0xFF987554),
                     ),
                   ),
                 ),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: GoogleFonts.rubik(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        if (nameController.text.isNotEmpty &&
+                            emailController.text.isNotEmpty) {
+                          try {
+                            await FirebaseFirestore.instance
+                                .collection('user-database')
+                                .doc(user['uid'])
+                                .update({
+                              'preferredName':
+                                  nameController.text.trim(),
+                              'email': emailController.text.trim(),
+                            });
+                            _fetchUsers();
+                            Navigator.pop(context);
+                            Fluttertoast.showToast(
+                              msg: 'User updated successfully',
+                            );
+                          } catch (e) {
+                            Fluttertoast.showToast(
+                              msg: 'Failed to update user',
+                            );
+                          }
+                        } else {
+                          Fluttertoast.showToast(
+                              msg: 'Please fill all fields');
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF987554),
+                          border: Border.all(
+                              color: const Color(0xFF987554)),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Save',
+                          style: GoogleFonts.rubik(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
               ],
             ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                if (nameController.text.isNotEmpty && emailController.text.isNotEmpty) {
-                  try {
-                    await FirebaseFirestore.instance
-                        .collection('user-database')
-                        .doc(user['uid'])
-                        .update({
-                      'preferredName': nameController.text.trim(),
-                      'email': emailController.text.trim(),
-                    });
-                    _fetchUsers();
-                    Navigator.pop(context);
-                    Fluttertoast.showToast(msg: 'User updated successfully');
-                  } catch (e) {
-                    Fluttertoast.showToast(msg: 'Failed to update user');
-                  }
-                } else {
-                  Fluttertoast.showToast(msg: 'Please fill all fields');
-                }
-              },
-              child: Text(
-                'Save',
-                style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-              ),
-            ),
-          ],
         );
       },
     );
   }
 
-  Future<void> _deleteUser(String uid) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Confirm Delete',
-          style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-        ),
-        content: Text(
-          'Are you sure you want to delete this user?',
-          style: GoogleFonts.concertOne(color: Colors.black87),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: GoogleFonts.concertOne(color: const Color(0xFF987554)),
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('user-database')
-            .doc(uid)
-            .delete();
-        _fetchUsers();
-        Fluttertoast.showToast(msg: 'User deleted successfully');
-      } catch (e) {
-        Fluttertoast.showToast(msg: 'Failed to delete user');
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-      ),
+      appBar: AppBar(backgroundColor: Colors.white),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,68 +244,75 @@ class _AdminManageUserPageState extends State<AdminManageUserPage> {
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 'Manage Users',
-                style: GoogleFonts.concertOne(
-                  fontSize: 32,
+                style: GoogleFonts.rubik(
+                  fontSize: 30,
                   color: const Color(0xFF987554),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
             Expanded(
               child: allUsers.isEmpty
-                  ? const Center(child: Text('No users found'))
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16.0),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.7,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
+                  ? const Center(
+                      child: Text(
+                        'No users found',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16.0),
                       itemCount: allUsers.length,
                       itemBuilder: (context, index) {
                         final user = allUsers[index];
-                        return GestureDetector(
-                          onTap: () => _editUser(user),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.withOpacity(0.3),
-                                  spreadRadius: 2,
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.only(bottom: 12.0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(
+                                color: Colors.black, width: 1.0),
+                          ),
+                          color: Colors.white,
+                          child: ListTile(
+                            contentPadding:
+                                const EdgeInsets.all(12.0),
+                            leading: const CircleAvatar(
+                              backgroundColor: Color(0xFF987554),
+                              child:
+                                  Icon(Icons.person, color: Colors.white),
                             ),
-                            child: Stack(
+                            title: Text(
+                              user['preferredName'],
+                              style: GoogleFonts.rubik(
+                                fontSize: 16,
+                                color: const Color(0xFF987554),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              user['email'],
+                              style: GoogleFonts.rubik(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    color: Colors.grey[200],
-                                    child: Center(
-                                      child: Text(
-                                        user['preferredName'],
-                                        style: GoogleFonts.concertOne(
-                                          fontSize: 16,
-                                          color: const Color(0xFF987554),
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Color(0xFF987554),
                                   ),
-                                ),
-                                Positioned(
-                                  top: 5,
-                                  right: 5,
-                                  child: IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _deleteUser(user['uid']),
-                                  ),
+                                  onPressed: () => _editUser(user),
                                 ),
                               ],
                             ),
+                            onTap: () => _editUser(user),
                           ),
                         );
                       },
