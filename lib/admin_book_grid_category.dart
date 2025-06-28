@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
 import 'book_card.dart';
 import 'admin_book_detail.dart';
 
@@ -95,101 +94,338 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
     final descriptionController = TextEditingController();
 
     final result = await showModalBottomSheet<bool>(
-    context: context,
-    isScrollControlled: true,
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Add New Book',
-              style: GoogleFonts.concertOne(
-                fontSize: 18,
-                color: Colors.brown[800], // Brown title
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: authorController,
-              decoration: const InputDecoration(
-                labelText: 'Author',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: publisherController,
-              decoration: const InputDecoration(
-                labelText: 'Publisher',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: yearController,
-              decoration: const InputDecoration(
-                labelText: 'Year Published',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: imageUrlController,
-              decoration: const InputDecoration(
-                labelText: 'Cover Image URL',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: genreController,
-              decoration: const InputDecoration(
-                labelText: 'Genre',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 4,
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancel'),
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          return SingleChildScrollView(
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(70),
+                  topRight: Radius.circular(70),
                 ),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Add'),
+              ),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                left: 16,
+                right: 16,
+                top: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
+                  const SizedBox(height: 15),
+                  Text(
+                    'Add New Book',
+                    style: GoogleFonts.rubik(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF987554),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Title',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Author',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: authorController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Publisher',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: publisherController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Year Published',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: yearController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Cover Image URL',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: imageUrlController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Genre',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: genreController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Description',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14,
+                        color: const Color(0xFF987554),
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: InputDecoration(
+                      hintStyle: GoogleFonts.roboto(color: Colors.grey),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                    maxLines: 4,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.rubik(
+                              color: Colors.black,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF987554),
+                            border: Border.all(
+                              color: const Color(0xFF987554),
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            'Add',
+                            style: GoogleFonts.rubik(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
 
@@ -275,211 +511,6 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
                           );
                         },
                       ),
-                    ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(thickness: 1),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildRecommendedSection() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return const SizedBox.shrink();
-    }
-
-    return StreamBuilder<List<QuerySnapshot>>(
-      stream: Stream.fromFuture(Future.wait([
-        FirebaseFirestore.instance
-            .collection('user-database')
-            .doc(user.uid)
-            .collection('bookmarks')
-            .get(),
-        FirebaseFirestore.instance
-            .collection('user-database')
-            .doc(user.uid)
-            .collection('book-shelf')
-            .get(),
-        FirebaseFirestore.instance
-            .collection('user-database')
-            .doc(user.uid)
-            .collection('search_history')
-            .orderBy('timestamp', descending: true)
-            .limit(10)
-            .get(),
-        FirebaseFirestore.instance.collection('book-database').get(),
-        FirebaseFirestore.instance.collectionGroup('ratings').get(),
-      ])),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const SizedBox.shrink();
-
-        final bookmarksSnapshot = snapshot.data![0];
-        final bookshelfSnapshot = snapshot.data![1];
-        final searchHistorySnapshot = snapshot.data![2];
-        final booksSnapshot = snapshot.data![3];
-        final ratingsSnapshot = snapshot.data![4];
-
-        final genres = <String>{};
-        final authors = <String>{};
-        final userBookIds = <String>{};
-
-        for (var doc in bookmarksSnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          if (data['genre'] != null) genres.add(data['genre'].toString().toLowerCase());
-          if (data['author'] != null) authors.add(data['author'].toString().toLowerCase());
-          userBookIds.add(doc.id);
-        }
-
-        for (var doc in bookshelfSnapshot.docs) {
-          final data = doc.data() as Map<String, dynamic>;
-          if (data['genre'] != null) genres.add(data['genre'].toString().toLowerCase());
-          if (data['author'] != null) authors.add(data['author'].toString().toLowerCase());
-          userBookIds.add(doc.id);
-        }
-
-        for (var doc in searchHistorySnapshot.docs) {
-          final query = (doc['query'] ?? '').toString().toLowerCase();
-          if (['romance', 'fantasy', 'self help', 'slice of life', 'horror'].contains(query)) {
-            genres.add(query);
-          } else {
-            authors.add(query);
-          }
-        }
-
-        final contentBooks = booksSnapshot.docs.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          final genre = (data['genre'] ?? '').toString().toLowerCase();
-          final author = (data['author'] ?? '').toString().toLowerCase();
-          return (genres.contains(genre) || authors.contains(author)) && !userBookIds.contains(doc.id);
-        }).map((doc) => {'id': doc.id, 'data': doc.data() as Map<String, dynamic>, 'score': 1.0}).toList();
-
-        final userSimilarities = <String, double>{};
-        final currentUserRatings = ratingsSnapshot.docs
-            .where((doc) => doc.reference.parent.parent!.id == user.uid)
-            .map((doc) => {'id': doc.id, 'rating': doc['rating']})
-            .toList();
-
-        final otherUsersRatings = <String, Map<String, int>>{};
-        for (var doc in ratingsSnapshot.docs) {
-          final otherUserId = doc.reference.parent.parent!.id;
-          if (otherUserId == user.uid) continue;
-          otherUsersRatings.putIfAbsent(otherUserId, () => {})[doc.id] = doc['rating'];
-        }
-
-        for (var entry in otherUsersRatings.entries) {
-          final otherUserId = entry.key;
-          final otherRatings = entry.value;
-          double dotProduct = 0;
-          double normA = 0;
-          double normB = 0;
-          for (var userRating in currentUserRatings) {
-            final bookId = userRating['id'];
-            final a = userRating['rating'].toDouble();
-            final b = (otherRatings[bookId] ?? 0).toDouble();
-            dotProduct += a * b;
-            normA += a * a;
-            normB += b * b;
-          }
-          final similarity = normA > 0 && normB > 0 ? dotProduct / (sqrt(normA) * sqrt(normB)) : 0;
-          if (similarity > 0) userSimilarities[otherUserId] = similarity.toDouble();
-        }
-
-        final similarUsers = userSimilarities.entries
-            .toList()
-            .sorted((a, b) => b.value.compareTo(a.value))
-            .take(5)
-            .map((e) => e.key)
-            .toList();
-
-        final collabBooks = ratingsSnapshot.docs
-            .where((doc) => similarUsers.contains(doc.reference.parent.parent!.id))
-            .where((doc) => (doc['rating'] ?? 0) >= 4)
-            .where((doc) => !userBookIds.contains(doc.id))
-            .map((doc) {
-              final book = booksSnapshot.docs.firstWhereOrNull((b) => b.id == doc.id);
-              if (book == null) return null;
-              return {
-                'id': doc.id,
-                'data': book.data() as Map<String, dynamic>,
-                'score': (doc['rating'] ?? 0).toDouble() / 5.0
-              };
-            }).whereType<Map<String, dynamic>>().toList();
-
-        final allRecommendations = [];
-        allRecommendations.addAll(contentBooks.map((b) => {
-          ...b,
-          'score': ((b['score'] ?? 0) as double) * 0.75
-        }));
-        allRecommendations.addAll(collabBooks.map((b) => {...b, 'score': b['score'] * 0.25}));
-
-        final bookMap = <String, Map<String, dynamic>>{};
-        for (var rec in allRecommendations) {
-          final id = rec['id'];
-          if (bookMap.containsKey(id)) {
-            bookMap[id]!['score'] = (bookMap[id]!['score'] as double) + (rec['score'] as double);
-          } else {
-            bookMap[id] = rec;
-          }
-        }
-        final recommendedBooks = bookMap.values.toList()
-          ..sort((a, b) => (b['score'] as double).compareTo(a['score'] as double));
-
-        // Only take the top 5 recommendations
-        final topRecommendations = recommendedBooks.take(5).toList();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-              child: Text(
-                'RECOMMENDED',
-                style: GoogleFonts.concertOne(
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: Color(0xFF987554),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 200,
-              child: topRecommendations.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No recommendations available.',
-                        style: const TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: topRecommendations.length,
-                      itemBuilder: (context, index) {
-                        final book = topRecommendations[index];
-                        return BookCard(
-                          bookData: book['data'] as Map<String, dynamic>,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AdminBookDetailPage(
-                                  bookData: book['data'] as Map<String, dynamic>,
-                                  searchType: 'recommended',
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
                     ),
             ),
             const Padding(
@@ -610,7 +641,6 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
             child: searchQuery.isEmpty
                 ? ListView(
                     children: [
-                      _buildRecommendedSection(),
                       _buildCategorySection('Romance', []),
                       _buildCategorySection('Fantasy', []),
                       _buildCategorySection('Self Help', []),
@@ -624,7 +654,7 @@ class _AdminBookGridByCategoryState extends State<AdminBookGridByCategory> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewBook,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
         backgroundColor: const Color(0xFF987554),
       ),
     );

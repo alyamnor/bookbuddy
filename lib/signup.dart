@@ -328,7 +328,14 @@ class _SignupState extends State<Signup> {
 
                           Center(
                             child: TextButton(
-                              onPressed: () => Get.offAll(() => const Login()),
+                                  onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const Login(),
+                                ),
+                              );
+                            },
                               child: const Text(
                                 'Already have an account? Login',
                                 style: TextStyle(
