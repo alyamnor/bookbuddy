@@ -1,3 +1,4 @@
+
 import 'package:bookbuddy/admin_setting.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,10 +28,69 @@ class AdminProfileScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _signOut() async {
+  Future<void> _signOut(BuildContext context) async {
     try {
-      await FirebaseAuth.instance.signOut();
-      Get.offAllNamed('/login');
+      // Show confirmation dialog
+      bool? confirm = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            title: Text(
+              'Confirm Log Out',
+              style: GoogleFonts.rubik(
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF987554),
+                ),
+              ),
+            ),
+            content: Text(
+              'Are you sure you want to log out?',
+              style: GoogleFonts.roboto(
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.rubik(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'Confirm',
+                  style: GoogleFonts.rubik(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      // Proceed with sign out only if confirmed
+      if (confirm == true) {
+        await FirebaseAuth.instance.signOut();
+        Get.offAllNamed('/login'); // Navigate to login screen after sign out
+      }
     } catch (e) {
       Get.snackbar('Error', 'Failed to sign out: $e');
     }
@@ -40,35 +100,43 @@ class AdminProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Center(child: Text('No user logged in'));
+      return const Scaffold(body: Center(child: Text('No user logged in')));
     }
 
     return Scaffold(
       appBar: AppBar(
+        title: Text(
+          "BookBuddy",
+          style: GoogleFonts.concertOne(
+            textStyle: const TextStyle(
+              fontSize: 30,
+              color: Color(0xFF987554),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        centerTitle: true,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.brown),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF987554)),
           onPressed: () {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder:
-                    (context) => Scaffold(
-                      body: AdminBookGridByCategory(),
-                      bottomNavigationBar: MainNavigation(),
-                    ),
+                builder: (context) => Scaffold(
+                  body: AdminBookGridByCategory(),
+                  bottomNavigationBar: MainNavigation(),
+                ),
               ),
             );
           },
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future:
-            FirebaseFirestore.instance
-                .collection('user-database')
-                .doc(user.uid)
-                .get(),
+        future: FirebaseFirestore.instance
+            .collection('user-database')
+            .doc(user.uid)
+            .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -93,74 +161,94 @@ class AdminProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32),
                   CircleAvatar(
                     radius: 70,
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage:
                         imageBytes != null ? MemoryImage(imageBytes) : null,
-                    child:
-                        imageBytes == null
-                            ? const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Colors.brown,
-                            )
-                            : null,
+                    child: imageBytes == null
+                        ? const Icon(
+                            Icons.person,
+                            size: 60,
+                            color: Colors.brown,
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     preferredName,
-                    style: GoogleFonts.concertOne(
+                    style: GoogleFonts.rubik(
                       textStyle: const TextStyle(
-                        fontSize: 37,
+                        fontSize: 24,
                         color: Color(0xFF987554),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     email,
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Welcome Back!",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    style: GoogleFonts.rubik(
+                      textStyle: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 30),
-                  _buildListTile(Icons.library_books, 'Manage Users', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AdminManageUserPage(),
-                      ),
-                    );
-                  }),
-                  const Divider(height: 1),
-                  _buildListTile(Icons.bookmark, 'Manage Events', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AdminManageEventPage(),
-                      ),
-                    );
-                  }),
-                  const Divider(height: 1),
-                  _buildListTile(Icons.settings, 'Account settings', () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AdminSettingPage(),
-                      ),
-                    );
-                  }),
-                  const Divider(height: 1),
                   _buildListTile(
-                    Icons.logout,
-                    'Log out',
-                    _signOut,
+                    icon: Icons.library_books,
+                    title: 'Manage Users',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminManageUserPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+                  _buildListTile(
+                    icon: Icons.bookmark,
+                    title: 'Manage Events',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminManageEventPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+                  _buildListTile(
+                    icon: Icons.settings,
+                    title: 'Account settings',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AdminSettingPage(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+                  _buildListTile(
+                    icon: Icons.logout,
+                    title: 'Log out',
+                    onTap: () => _signOut(context),
                     color: Colors.red,
                   ),
                 ],
@@ -172,17 +260,23 @@ class AdminProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListTile(
-    IconData icon,
-    String title,
-    VoidCallback onTap, {
+  Widget _buildListTile({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
     Color color = Colors.brown,
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(
         title,
-        style: TextStyle(color: color == Colors.red ? color : Colors.black),
+        style: GoogleFonts.rubik(
+          textStyle: TextStyle(
+            color: color == Colors.red ? color : Color(0xFF987554),
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       onTap: onTap,
     );
