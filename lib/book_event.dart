@@ -17,11 +17,6 @@ class _BookEventPageState extends State<BookEventPage> {
   final userId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final event = widget.eventData;
     final eventName = event['event-name'] ?? 'Unknown Event';
@@ -33,13 +28,8 @@ class _BookEventPageState extends State<BookEventPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: Text(
-          eventName,
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            color: const Color(0xFF987554),
-          ),
-        ),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF987554)),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -47,73 +37,82 @@ class _BookEventPageState extends State<BookEventPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color.fromRGBO(0, 0, 0, 0.2),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: CachedNetworkImage(
-                      imageUrl: eventBanner,
-                      height: 300,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 100),
+              // Banner with increased width
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromRGBO(0, 0, 0, 0.2),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: CachedNetworkImage(
+                    imageUrl: eventBanner,
+                    height: 180,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => const Icon(Icons.broken_image, size: 100),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+              // Event name under banner
+              Center(
+                child: Text(
+                  eventName,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.rubik(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF987554),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
               Text(
                 'Description',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
+                style: GoogleFonts.rubik(
+                  fontSize: 16,
                   color: const Color(0xFF987554),
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                eventDescription,
-                style: GoogleFonts.poppins(fontSize: 14),
-              ),
+              Text(eventDescription, style: GoogleFonts.roboto(fontSize: 14)),
               const SizedBox(height: 20),
               Text(
                 'Date',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
+                style: GoogleFonts.rubik(
+                  fontSize: 16,
                   color: const Color(0xFF987554),
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
               Text(
-                eventDate != null ? DateFormat.yMMMd().format(eventDate) : 'Date not specified',
-                style: GoogleFonts.poppins(fontSize: 14),
+                eventDate != null
+                    ? DateFormat.yMMMd().format(eventDate)
+                    : 'Date not specified',
+                style: GoogleFonts.roboto(fontSize: 14),
               ),
               const SizedBox(height: 20),
               Text(
                 'Venue',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
+                style: GoogleFonts.rubik(
+                  fontSize: 16,
                   color: const Color(0xFF987554),
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 10),
-              Text(
-                eventVenue,
-                style: GoogleFonts.poppins(fontSize: 14),
-              ),
+              Text(eventVenue, style: GoogleFonts.roboto(fontSize: 14)),
             ],
           ),
         ),

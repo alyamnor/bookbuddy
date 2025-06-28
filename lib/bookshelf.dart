@@ -629,7 +629,7 @@ class _BookshelfPageState extends State<BookshelfPage> {
                                         child: Text(
                                           'Delete',
                                           style: GoogleFonts.rubik(
-                                            color: Colors.black,
+                                            color: Colors.red,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),

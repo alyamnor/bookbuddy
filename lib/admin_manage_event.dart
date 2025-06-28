@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:logger/logger.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'admin_book_event.dart';
+import 'book_event.dart';
 // Make sure BookEventPage is defined in book_event.dart and exported properly.
 
 class AdminManageEventPage extends StatefulWidget {

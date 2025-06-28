@@ -56,28 +56,29 @@ class _BookmarkPageState extends State<BookmarkPage> {
         ),
         title: Text(
           'Remove Bookmark',
-          style: GoogleFonts.roboto(
-            fontSize: 24,
+          style: GoogleFonts.rubik(
+            fontSize: 16,
             color: const Color(0xFF987554),
+            fontWeight: FontWeight.bold,
           ),
         ),
         content: Text(
-          'Are you sure you want to remove "$title" from your bookmarks?',
-          style: GoogleFonts.roboto(color: Colors.black87),
+          'Are you sure you want to remove $title from your bookmarks?',
+          style: GoogleFonts.roboto(color: Colors.black87, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: Text(
               'Cancel',
-              style: GoogleFonts.roboto(color: const Color(0xFF987554)),
+              style: GoogleFonts.rubik(color: Colors.grey, fontWeight: FontWeight.bold),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Remove',
-              style: GoogleFonts.roboto(color: const Color(0xFFFF0000)),
+              style: GoogleFonts.rubik(color: const Color(0xFFFF0000), fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -151,7 +152,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                         padding: const EdgeInsets.all(8.0),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.75, // Increased to make boxes smaller
+                          childAspectRatio: 0.75,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                         ),
@@ -192,7 +193,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(
-                                mainAxisSize: MainAxisSize.min, // Tighten the column
+                                mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   ClipRRect(
@@ -203,7 +204,7 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                       imageUrl: book['cover-image-url'] ??
                                           'https://via.placeholder.com/150',
                                       fit: BoxFit.cover,
-                                      height: 100, // Reduced height for smaller box
+                                      height: 100,
                                       width: double.infinity,
                                       placeholder: (context, url) => const Center(
                                         child: CircularProgressIndicator(),
@@ -221,30 +222,32 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.fromLTRB(8.0, 4.0, 8.0, 4.0), // Reduced padding
+                                    padding: const EdgeInsets.fromLTRB(8.0, 2.0, 8.0, 2.0),
                                     child: Row(
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Expanded(
                                           child: Column(
-                                            mainAxisSize: MainAxisSize.min, // Tighten the text column
+                                            mainAxisSize: MainAxisSize.min,
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
+                                              const SizedBox(height: 8),
                                               Text(
                                                 book['title'] ?? 'Unknown Title',
                                                 style: GoogleFonts.rubik(
-                                                  fontSize: 14, // Slightly smaller font
+                                                  fontSize: 16,
                                                   color: const Color(0xFF000000),
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
+                                              const SizedBox(height: 4),
                                               Text(
                                                 'by ${book['author'] ?? 'Unknown Author'}',
                                                 style: GoogleFonts.roboto(
-                                                  fontSize: 12, // Slightly smaller font
+                                                  fontSize: 12,
                                                   color: Colors.black54,
                                                 ),
                                                 maxLines: 1,
@@ -257,14 +260,14 @@ class _BookmarkPageState extends State<BookmarkPage> {
                                           icon: const Icon(
                                             Icons.bookmark,
                                             color: Color(0xFFFF0000),
-                                            size: 30, // Smaller icon
+                                            size: 30,
                                           ),
                                           onPressed: () => _removeBookmark(
                                             bookId,
                                             book['title'] ?? 'Unknown Title',
                                           ),
-                                          padding: EdgeInsets.zero, // Remove extra padding
-                                          constraints: const BoxConstraints(), // Remove default constraints
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
                                         ),
                                       ],
                                     ),

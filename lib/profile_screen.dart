@@ -27,10 +27,69 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _signOut() async {
+  Future<void> _signOut(BuildContext context) async {
     try {
-      await FirebaseAuth.instance.signOut();
-      Get.offAllNamed('/login'); // Navigate to login screen after sign out
+      // Show confirmation dialog
+      bool? confirm = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+                    backgroundColor: Colors.white,
+            title: Text(
+              'Confirm Log Out',
+              style: GoogleFonts.rubik(
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF987554),
+                ),
+              ),
+            ),
+            content: Text(
+              'Are you sure you want to log out?',
+              style: GoogleFonts.roboto(
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.rubik(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text(
+                  'Confirm',
+                  style: GoogleFonts.rubik(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+
+      // Proceed with sign out only if confirmed
+      if (confirm == true) {
+        await FirebaseAuth.instance.signOut();
+        Get.offAllNamed('/login'); // Navigate to login screen after sign out
+      }
     } catch (e) {
       Get.snackbar('Error', 'Failed to sign out: $e');
     }
@@ -40,9 +99,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('No user logged in')),
-      );
+      return const Scaffold(body: Center(child: Text('No user logged in')));
     }
 
     return Scaffold(
@@ -61,10 +118,11 @@ class ProfileScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('user-database')
-            .doc(user.uid)
-            .get(),
+        future:
+            FirebaseFirestore.instance
+                .collection('user-database')
+                .doc(user.uid)
+                .get(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -95,30 +153,37 @@ class ProfileScreen extends StatelessWidget {
                     backgroundColor: Colors.grey.shade200,
                     backgroundImage:
                         imageBytes != null ? MemoryImage(imageBytes) : null,
-                    child: imageBytes == null
-                        ? const Icon(
-                            Icons.person,
-                            size: 60,
-                            color: Colors.brown,
-                          )
-                        : null,
+                    child:
+                        imageBytes == null
+                            ? const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.brown,
+                            )
+                            : null,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     preferredName,
                     style: GoogleFonts.rubik(
                       textStyle: const TextStyle(
-                        fontSize: 25,
+                        fontSize: 24,
                         color: Color(0xFF987554),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Welcome Back!",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    style: GoogleFonts.rubik(
+                      textStyle: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ),
+
                   const SizedBox(height: 30),
                   _buildListTile(
                     icon: Icons.library_books,
@@ -132,7 +197,10 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  Divider(height: 1, color: Colors.grey.shade300), // Lighter divider
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ), // Lighter divider
                   _buildListTile(
                     icon: Icons.bookmark,
                     title: 'Bookmark',
@@ -145,24 +213,28 @@ class ProfileScreen extends StatelessWidget {
                       );
                     },
                   ),
-                  Divider(height: 1, color: Colors.grey.shade300), // Lighter divider
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ), // Lighter divider
                   _buildListTile(
                     icon: Icons.settings,
                     title: 'Account settings',
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => SettingsPage(),
-                        ),
+                        MaterialPageRoute(builder: (context) => SettingsPage()),
                       );
                     },
                   ),
-                  Divider(height: 1, color: Colors.grey.shade300), // Lighter divider
+                  Divider(
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ), // Lighter divider
                   _buildListTile(
                     icon: Icons.logout,
                     title: 'Log out',
-                    onTap: _signOut,
+                    onTap: () => _signOut(context), // Pass context to _signOut
                     color: Colors.red,
                   ),
                 ],
