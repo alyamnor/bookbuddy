@@ -111,7 +111,7 @@ class _MyImagePickerState extends State<MyImagePicker> {
     logger.i("New image picked: ${_image!.path}");
 
     try {
-      // OCR1 - Text Regopn Detection
+      // OCR1 - Text Region Detection
       final inputImage = InputImage.fromFilePath(_image!.path);
       final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
       final RecognizedText initialText = await textRecognizer.processImage(inputImage);
@@ -228,27 +228,27 @@ class _MyImagePickerState extends State<MyImagePicker> {
           author,
         );
 
-        int levenshteinDistance(String s1, String s2) {
-          s1 = s1.toLowerCase();
+        int levenshteinDistance(String poli, String s2) {
+          poli = poli.toLowerCase();
           s2 = s2.toLowerCase();
-          if (s1.isEmpty) return s2.length;
-          if (s2.isEmpty) return s1.length;
+          if (poli.isEmpty) return s2.length;
+          if (s2.isEmpty) return poli.length;
           final List<List<int>> matrix = List.generate(
-            s1.length + 1,
+            poli.length + 1,
             (i) => List<int>.filled(s2.length + 1, 0),
           );
-          for (int i = 0; i <= s1.length; i++) matrix[i][0] = i;
+          for (int i = 0; i <= poli.length; i++) matrix[i][0] = i;
           for (int j = 0; j <= s2.length; j++) matrix[0][j] = j;
-          for (int i = 1; i <= s1.length; i++) {
+          for (int i = 1; i <= poli.length; i++) {
             for (int j = 1; j <= s2.length; j++) {
-              int cost = s1[i - 1] == s2[j - 1] ? 0 : 1;
+              int cost = poli[i - 1] == s2[j - 1] ? 0 : 1;
               matrix[i][j] = min(
                 min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1),
                 matrix[i - 1][j - 1] + cost,
               );
             }
           }
-          return matrix[s1.length][s2.length];
+          return matrix[poli.length][s2.length];
         }
 
         double levenshteinScore =
@@ -319,70 +319,165 @@ class _MyImagePickerState extends State<MyImagePicker> {
     _authorController.text = _detectedAuthor;
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text("No Match Found"),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("OCR Result: $_ocrText"),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Corrected Title',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _authorController,
-                    decoration: const InputDecoration(
-                      labelText: 'Corrected Author',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  CheckboxListTile(
-                    title: const Text("Use High Contrast Preprocessing"),
-                    value: _useHighContrast,
-                    onChanged:
-                        (value) => setState(() => _useHighContrast = value!),
-                  ),
-                ],
-              ),
+      builder: (_) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFF987554), width: 2),
+        ),
+        title: Text(
+          "No Match Found",
+          style: GoogleFonts.rubik(
+            textStyle: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF987554),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
+          ),
+          textAlign: TextAlign.center,
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "OCR Result:",
+                style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[700],
+                  ),
+                ),
               ),
-              TextButton(
-                onPressed:
-                    source != null
-                        ? () {
-                          Navigator.pop(context);
-                          pickImage(source);
-                        }
-                        : null,
-                child: const Text("Retry"),
+              const SizedBox(height: 8),
+              Text(
+                _ocrText.isEmpty ? 'No text detected' : _ocrText,
+                style: GoogleFonts.roboto(
+                  textStyle: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await _searchBookWithML(
-                    _titleController.text.toLowerCase() +
-                        ' ' +
-                        _authorController.text.toLowerCase(),
-                    _titleController.text,
-                    _authorController.text,
-                  );
-                },
-                child: const Text("Search Manually"),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Corrected Title',
+                  labelStyle: GoogleFonts.roboto(
+                    textStyle: TextStyle(color: Colors.grey[600]),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF987554)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                  ),
+                ),
+                style: GoogleFonts.roboto(
+                  textStyle: const TextStyle(color: Colors.black),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _authorController,
+                decoration: InputDecoration(
+                  labelText: 'Corrected Author',
+                  labelStyle: GoogleFonts.roboto(
+                    textStyle: TextStyle(color: Colors.grey[600]),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF987554)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF987554), width: 2),
+                  ),
+                ),
+                style: GoogleFonts.roboto(
+                  textStyle: const TextStyle(color: Colors.black),
+                ),
+              ),
+              const SizedBox(height: 12),
+              CheckboxListTile(
+                title: Text(
+                  "Use High Contrast Preprocessing",
+                  style: GoogleFonts.roboto(
+                    textStyle: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ),
+                value: _useHighContrast,
+                onChanged: (value) => setState(() => _useHighContrast = value!),
+                activeColor: const Color(0xFF987554),
+                checkColor: Colors.white,
+                controlAffinity: ListTileControlAffinity.leading,
               ),
             ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: GoogleFonts.rubik(
+                textStyle: const TextStyle(
+                  color: Color(0xFF987554),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: source != null
+                ? () {
+                    Navigator.pop(context);
+                    pickImage(source);
+                  }
+                : null,
+            child: Text(
+              "Retry",
+              style: GoogleFonts.rubik(
+                textStyle: TextStyle(
+                  color: source != null ? const Color(0xFF987554) : Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _searchBookWithML(
+                _titleController.text.toLowerCase() +
+                    ' ' +
+                    _authorController.text.toLowerCase(),
+                _titleController.text,
+                _authorController.text,
+              );
+            },
+            child: Text(
+              "Search Manually",
+              style: GoogleFonts.rubik(
+                textStyle: const TextStyle(
+                  color: Color(0xFF987554),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -529,7 +624,7 @@ class _MyImagePickerState extends State<MyImagePicker> {
                                     bookData: _bookData!,
                                     allBooks: _allBooks,
                                     processedImage: _processedImage,
-                                    searchType: searchType, // Add valid searchType
+                                    searchType: searchType,
                                   ),
                                 ),
                               );
@@ -554,12 +649,11 @@ class _MyImagePickerState extends State<MyImagePicker> {
                       : const Text(
                         "Tap below to scan or upload a book cover",
                         style: TextStyle(
-            fontStyle: FontStyle.italic,
-            color: Colors.grey,
-            fontSize: 14, // Increased font size
-          ),
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
                       ),
-                      
             ),
           ),
           Padding(
