@@ -20,7 +20,7 @@ class MyImagePicker extends StatefulWidget {
 
 class _MyImagePickerState extends State<MyImagePicker> {
   File? _image;
-  File? _processedImage;
+  List<Map<String, dynamic>> _processedImages = [];
   String _detectedTitle = '';
   String _detectedAuthor = '';
   String _ocrText = '';
@@ -31,8 +31,19 @@ class _MyImagePickerState extends State<MyImagePicker> {
   final logger = Logger();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _authorController = TextEditingController();
+  double _imageSliderValue = 0;
 
-  Future<File> _preprocessImage(
+  Future<File> _saveImage(img.Image image, String suffix) async {
+    final tempDir = await getTemporaryDirectory();
+    final uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
+    final tempPath = '${tempDir.path}/image_${suffix}_$uniqueId.png';
+    final processedFile = File(tempPath)
+      ..writeAsBytesSync(img.encodePng(image));
+    logger.i("Image saved to: $tempPath");
+    return processedFile;
+  }
+
+  Future<List<Map<String, dynamic>>> _preprocessImage(
     File imageFile,
     RecognizedText? recognizedText,
   ) async {
@@ -42,7 +53,12 @@ class _MyImagePickerState extends State<MyImagePicker> {
       throw Exception('Failed to decode image');
     }
 
+    List<Map<String, dynamic>> processingSteps = [
+      {'file': imageFile, 'label': 'Original'},
+    ];
+
     // Dynamic cropping based on text regions if available
+    img.Image croppedImage = image;
     if (recognizedText != null && recognizedText.blocks.isNotEmpty) {
       int minX = image.width, minY = image.height, maxX = 0, maxY = 0;
       for (var block in recognizedText.blocks) {
@@ -56,35 +72,48 @@ class _MyImagePickerState extends State<MyImagePicker> {
       minY = max(0, minY - padding);
       maxX = min(image.width, maxX + padding);
       maxY = min(image.height, maxY + padding);
-      image = img.copyCrop(
+      croppedImage = img.copyCrop(
         image,
         x: minX,
         y: minY,
         width: maxX - minX,
         height: maxY - minY,
       );
+      processingSteps.add({
+        'file': await _saveImage(croppedImage, 'cropped'),
+        'label': 'Cropped'
+      });
     }
 
     // Grayscale
-    image = img.grayscale(image);
+    img.Image grayscaleImage = img.grayscale(croppedImage);
+    processingSteps.add({
+      'file': await _saveImage(grayscaleImage, 'grayscale'),
+      'label': 'Grayscale'
+    });
 
     // Adaptive thresholding or minimal processing
+    img.Image finalImage = grayscaleImage;
     if (_useHighContrast) {
-      image = img.adjustColor(image, contrast: 2.0, brightness: 30);
-      image = img.sobel(image, amount: 0.3);
+      finalImage = img.adjustColor(grayscaleImage, contrast: 2.0, brightness: 30);
+      processingSteps.add({
+        'file': await _saveImage(finalImage, 'high_contrast'),
+        'label': 'High Contrast'
+      });
+      finalImage = img.sobel(finalImage, amount: 0.3);
+      processingSteps.add({
+        'file': await _saveImage(finalImage, 'sobel'),
+        'label': 'Sobel Edge'
+      });
     } else {
-      image = img.adjustColor(image, contrast: 1.2);
+      finalImage = img.adjustColor(grayscaleImage, contrast: 1.2);
+      processingSteps.add({
+        'file': await _saveImage(finalImage, 'adjusted'),
+        'label': 'Adjusted Contrast'
+      });
     }
 
-    // Save processed image with unique file name
-    final tempDir = await getTemporaryDirectory();
-    final uniqueId = DateTime.now().millisecondsSinceEpoch.toString();
-    final tempPath = '${tempDir.path}/processed_image_$uniqueId.png';
-    final processedFile = File(tempPath)
-      ..writeAsBytesSync(img.encodePng(image));
-
-    logger.i("Processed image saved to: $tempPath");
-    return processedFile;
+    return processingSteps;
   }
 
   String _cleanOcrText(String text) {
@@ -100,12 +129,13 @@ class _MyImagePickerState extends State<MyImagePicker> {
 
     setState(() {
       _image = File(pickedFile.path);
-      _processedImage = null;
+      _processedImages = [];
       _detectedTitle = '';
       _detectedAuthor = '';
       _ocrText = '';
       _bookData = null;
       _isLoading = true;
+      _imageSliderValue = 0;
     });
 
     logger.i("New image picked: ${_image!.path}");
@@ -117,8 +147,8 @@ class _MyImagePickerState extends State<MyImagePicker> {
       final RecognizedText initialText = await textRecognizer.processImage(inputImage);
 
       // Preprocess image with text region data
-      _processedImage = await _preprocessImage(_image!, initialText);
-      final processedInput = InputImage.fromFilePath(_processedImage!.path);
+      _processedImages = await _preprocessImage(_image!, initialText);
+      final processedInput = InputImage.fromFilePath(_processedImages.last['file'].path);
       final RecognizedText recognizedText = await textRecognizer.processImage(
         processedInput,
       );
@@ -138,11 +168,6 @@ class _MyImagePickerState extends State<MyImagePicker> {
 
       await _searchBookWithML(scannedText, _detectedTitle, _detectedAuthor);
       await textRecognizer.close();
-
-      setState(() {
-        // Ensure the UI updates with the new processed image
-        _processedImage = File(_processedImage!.path);
-      });
     } catch (e, stackTrace) {
       logger.e(
         "Image Processing or OCR Error",
@@ -502,158 +527,199 @@ class _MyImagePickerState extends State<MyImagePicker> {
         children: [
           Expanded(
             child: Center(
-              child:
-                  _isLoading
-                      ? const CircularProgressIndicator()
-                      : _bookData != null
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : _bookData != null
                       ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 20),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color.fromRGBO(0, 0, 0, 0.2),
-                                  spreadRadius: 2,
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child:
-                                _processedImage != null
-                                    ? Image.file(
-                                      _processedImage!,
-                                      height: 220,
-                                      width: 150,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Image.file(
-                                        _image!,
-                                        height: 220,
-                                        width: 150,
-                                        fit: BoxFit.cover,
-                                      ),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 20),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color.fromRGBO(0, 0, 0, 0.2),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: _processedImages.isNotEmpty
+                                  ? Column(
+                                      children: [
+                                        Image.file(
+                                          _processedImages[
+                                              _imageSliderValue.toInt()]['file'],
+                                          height: 220,
+                                          width: 150,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Image.file(
+                                            _image!,
+                                            height: 220,
+                                            width: 150,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          _processedImages[_imageSliderValue
+                                                  .toInt()]['label'],
+                                          style: GoogleFonts.roboto(
+                                            textStyle: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        if (_processedImages.length > 1)
+                                          Slider(
+                                            value: _imageSliderValue,
+                                            min: 0,
+                                            max:
+                                                (_processedImages.length - 1)
+                                                    .toDouble(),
+                                            divisions:
+                                                _processedImages.length - 1,
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _imageSliderValue = value;
+                                              });
+                                            },
+                                            activeColor: const Color(0xFF987554),
+                                            inactiveColor: Colors.grey[300],
+                                          ),
+                                      ],
                                     )
-                                    : Image.file(
+                                  : Image.file(
                                       _image!,
                                       height: 220,
                                       width: 150,
                                       fit: BoxFit.cover,
                                     ),
-                          ),
-                          Text(
-                            _bookData!['title'] ?? 'Unknown Title',
-                            style: GoogleFonts.concertOne(
-                              textStyle: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                color: Color(0xFF987554),
+                            ),
+                            Text(
+                              _bookData!['title'] ?? 'Unknown Title',
+                              style: GoogleFonts.concertOne(
+                                textStyle: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 22,
+                                  color: Color(0xFF987554),
+                                ),
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              "by ${_bookData!['author'] ?? 'Unknown Author'}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey,
+                              ),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey[300]!),
+                              ),
+                              constraints: BoxConstraints(
+                                maxWidth:
+                                    MediaQuery.of(context).size.width * 0.8,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Scanned Text:",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _ocrText.isEmpty
+                                        ? 'No text detected'
+                                        : _ocrText,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
                               ),
                             ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "by ${_bookData!['author'] ?? 'Unknown Author'}",
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              color: Colors.grey,
-                            ),
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey[300]!),
-                            ),
-                            constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.8,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Scanned Text:",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                    fontWeight: FontWeight.bold,
+                            const SizedBox(height: 12),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                String searchType = 'title';
+                                if (_bookData!.containsKey('author') &&
+                                    _bookData!['author'] != null &&
+                                    _bookData!['author'].isNotEmpty) {
+                                  searchType = 'author';
+                                } else if (_bookData!.containsKey('genre') &&
+                                    _bookData!['genre'] != null &&
+                                    _bookData!['genre'].isNotEmpty) {
+                                  searchType = 'genre';
+                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => BookDetailPage(
+                                      bookData: _bookData!,
+                                      allBooks: _allBooks,
+                                      processedImage:
+                                          _processedImages.isNotEmpty
+                                              ? _processedImages.last['file']
+                                              : null,
+                                      searchType: searchType,
+                                    ),
                                   ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.arrow_forward,
+                                color: Colors.grey,
+                              ),
+                              label: const Text(
+                                "Read more",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[200],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  _ocrText.isEmpty ? 'No text detected' : _ocrText,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                  maxLines: 3,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              // Determine searchType dynamically based on OCR output
-                              String searchType = 'title'; // Default
-                              if (_bookData!.containsKey('author') && _bookData!['author'] != null && _bookData!['author'].isNotEmpty) {
-                                searchType = 'author';
-                              } else if (_bookData!.containsKey('genre') && _bookData!['genre'] != null && _bookData!['genre'].isNotEmpty) {
-                                searchType = 'genre';
-                              }
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => BookDetailPage(
-                                    bookData: _bookData!,
-                                    allBooks: _allBooks,
-                                    processedImage: _processedImage,
-                                    searchType: searchType,
-                                  ),
-                                ),
-                              );
-                            },
-                            icon: const Icon(
-                              Icons.arrow_forward,
-                              color: Colors.grey,
-                            ),
-                            label: const Text(
-                              "Read more",
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[200],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
                               ),
                             ),
-                          ),
-                        ],
-                      )
+                          ],
+                        )
                       : const Text(
-                        "Tap below to scan or upload a book cover",
-                        style: TextStyle(
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey,
-                          fontSize: 14,
+                          "Tap below to scan or upload a book cover",
+                          style: TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
             ),
           ),
           Padding(
