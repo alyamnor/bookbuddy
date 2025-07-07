@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class AdminBookDetailPage extends StatefulWidget {
   final Map<String, dynamic> bookData;
@@ -28,7 +27,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
   final Logger _logger = Logger(printer: PrettyPrinter());
   bool _showProcessedImage = false;
   List<Map<String, dynamic>> _comments = [];
-  double _userRating = 0;
   String? _bookId;
   final userId = FirebaseAuth.instance.currentUser?.uid;
 
@@ -37,7 +35,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
     super.initState();
     _initializeBookId();
     _fetchComments();
-    _fetchUserRating();
   }
 
   Future<void> _initializeBookId() async {
@@ -195,43 +192,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
     } catch (e) {
       _logger.e('Delete comment error', error: e);
       Fluttertoast.showToast(msg: 'Failed to delete comment');
-    }
-  }
-
-  Future<void> _fetchUserRating() async {
-    if (userId == null || _bookId == null) return;
-    final doc = await FirebaseFirestore.instance
-        .collection('user-database')
-        .doc(userId)
-        .collection('ratings')
-        .doc(_bookId)
-        .get();
-    if (doc.exists) {
-      setState(() {
-        _userRating = (doc.data()?['rating'] ?? 0).toDouble();
-      });
-    }
-  }
-
-  Future<void> _updateRating(double rating) async {
-    if (userId == null || _bookId == null) return;
-    try {
-      await FirebaseFirestore.instance
-          .collection('user-database')
-          .doc(userId)
-          .collection('ratings')
-          .doc(_bookId)
-          .set({
-        'rating': rating.toInt(),
-        'timestamp': FieldValue.serverTimestamp(),
-      });
-      setState(() {
-        _userRating = rating;
-      });
-      Fluttertoast.showToast(msg: 'Rating submitted');
-    } catch (e) {
-      _logger.e('Rating error', error: e);
-      Fluttertoast.showToast(msg: 'Failed to submit rating');
     }
   }
 
@@ -628,22 +588,6 @@ class _AdminBookDetailPageState extends State<AdminBookDetailPage> {
                     fontStyle: FontStyle.italic,
                     color: Colors.grey,
                   ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: RatingBar.builder(
-                  initialRating: _userRating,
-                  minRating: 1,
-                  direction: Axis.horizontal,
-                  allowHalfRating: false,
-                  itemCount: 5,
-                  itemSize: 30,
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Color(0xFF987554),
-                  ),
-                  onRatingUpdate: _updateRating,
                 ),
               ),
               const SizedBox(height: 20),

@@ -6,7 +6,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 class BookDetailPage extends StatefulWidget {
   final Map<String, dynamic> bookData;
@@ -33,7 +32,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
   bool _showProcessedImage = false;
   final TextEditingController _commentController = TextEditingController();
   List<Map<String, dynamic>> _comments = [];
-  double _userRating = 0;
   String? _bookId;
 
   @override
@@ -42,7 +40,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
     _initializeBookId();
     _checkBookmarkStatus();
     _fetchComments();
-    _fetchUserRating();
   }
 
   Future<void> _initializeBookId() async {
@@ -95,7 +92,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
       if (_isBookmarked) {
         await docRef.delete();
         _logger.i('Bookmark removed: ${widget.bookData['title']}');
-        Fluttertoast.showToast(msg: 'Bookmark removed');
+        Fluttertoast.showToast(msg: 'Bookmark，比removed');
       } else {
         await docRef.set({
           'bookId': _bookId,
@@ -185,44 +182,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
     }
   }
 
-  Future<void> _fetchUserRating() async {
-    if (userId == null || _bookId == null) return;
-    final doc =
-        await FirebaseFirestore.instance
-            .collection('user-database')
-            .doc(userId)
-            .collection('ratings')
-            .doc(_bookId)
-            .get();
-    if (doc.exists) {
-      setState(() {
-        _userRating = (doc.data()?['rating'] ?? 0).toDouble();
-      });
-    }
-  }
-
-  Future<void> _updateRating(double rating) async {
-    if (userId == null || _bookId == null) return;
-    try {
-      await FirebaseFirestore.instance
-          .collection('user-database')
-          .doc(userId)
-          .collection('ratings')
-          .doc(_bookId)
-          .set({
-            'rating': rating.toInt(),
-            'timestamp': FieldValue.serverTimestamp(),
-          });
-      setState(() {
-        _userRating = rating;
-      });
-      Fluttertoast.showToast(msg: 'Rating submitted');
-    } catch (e) {
-      _logger.e('Rating error', error: e);
-      Fluttertoast.showToast(msg: 'Failed to submit rating');
-    }
-  }
-
   List<Map<String, dynamic>> _getRecommendedBooks() {
     _logger.i('Recommendation searchType: ${widget.searchType}');
     final currentBookId = widget.bookData['id'];
@@ -266,7 +225,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
       });
     }
 
-    return filteredBooks.take(20).toList(); // Limit to 5 recommendations
+    return filteredBooks.take(20).toList(); // Limit to 20 recommendations
   }
 
   @override
@@ -294,14 +253,14 @@ class _BookDetailPageState extends State<BookDetailPage> {
           IconButton(
             icon: const Icon(Icons.comment_outlined, size: 30),
             onPressed: () {
-             showModalBottomSheet(
-  context: context,
-  isScrollControlled: true,
-  backgroundColor: Colors.transparent, // Make the default background transparent
-  barrierColor: Colors.black54, // Adjust barrier color (semi-transparent black)
-  elevation: 0,
-  builder: (_) => _buildCommentSheet(),
-);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                barrierColor: Colors.black54,
+                elevation: 0,
+                builder: (_) => _buildCommentSheet(),
+              );
             },
           ),
         ],
@@ -356,7 +315,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
                   ),
                 ),
               ),
-              
               const SizedBox(height: 10),
               Center(
                 child: Text(
@@ -380,21 +338,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
                     fontStyle: FontStyle.italic,
                     color: Colors.grey,
                   ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: RatingBar.builder(
-                  initialRating: _userRating,
-                  minRating: 1,
-                  direction: Axis.horizontal,
-                  allowHalfRating: false,
-                  itemCount: 5,
-                  itemSize: 30,
-                  itemBuilder:
-                      (context, _) =>
-                          const Icon(Icons.star, color: Color(0xFF987554)),
-                  onRatingUpdate: _updateRating,
                 ),
               ),
               const SizedBox(height: 20),
@@ -596,7 +539,7 @@ class _BookDetailPageState extends State<BookDetailPage> {
                 style: TextStyle(
                   fontStyle: FontStyle.italic,
                   color: Colors.grey,
-                  fontSize: 14, // Increased font size
+                  fontSize: 14,
                 ),
               ),
             )
@@ -657,8 +600,6 @@ class _BookDetailPageState extends State<BookDetailPage> {
     );
   }
 }
-
-// Move these classes outside of _BookDetailPageState
 
 class _InfoItem extends StatelessWidget {
   final String label;
